@@ -95,7 +95,9 @@ MAN_PAGES=(bash podman buildah bootc flatpak wine btrfs cryptsetup git just)
 
 declare -i SUCCESS_COUNT=0
 declare -i FAIL_COUNT=0
+declare -i SKIPPED_COUNT=0
 FAILED_ITEMS=()
+SKIPPED_ITEMS=()
 
 log "================================================="
 log " Synchronisation du kit de survie Linux offline"
@@ -259,9 +261,9 @@ if command -v man2html >/dev/null 2>&1; then
       log "   OK  page man exportée : ${page}"
       SUCCESS_COUNT+=1
     else
-      log "   IGNORÉ page man introuvable : ${page}"
-      FAIL_COUNT+=1
-      FAILED_ITEMS+=("Man Page: ${page}")
+      log "   IGNORÉ page man introuvable (outil non installé localement) : ${page}"
+      SKIPPED_COUNT+=1
+      SKIPPED_ITEMS+=("Man Page: ${page}")
     fi
   done
   log "Pages man générées dans ${MAN_DIR}/"
@@ -272,8 +274,16 @@ fi
 # --- BILAN FINAL -------------------------------------------------------------
 log "================================================="
 log " Résumé de la synchronisation"
-log " Succès : ${SUCCESS_COUNT}"
-log " Échecs : ${FAIL_COUNT}"
+log " Succès  : ${SUCCESS_COUNT}"
+log " Ignorés : ${SKIPPED_COUNT} (ex. outils non installés localement, sans impact)"
+log " Échecs  : ${FAIL_COUNT}"
+
+if [[ ${SKIPPED_COUNT} -gt 0 ]]; then
+  log " Éléments ignorés :"
+  for ITEM in "${SKIPPED_ITEMS[@]}"; do
+    log "   - ${ITEM}"
+  done
+fi
 
 if [[ ${FAIL_COUNT} -gt 0 ]]; then
   log " Éléments en échec :"
@@ -283,4 +293,7 @@ if [[ ${FAIL_COUNT} -gt 0 ]]; then
 fi
 log "================================================="
 
+# Seuls les vrais échecs (téléchargement, clonage) font échouer le script.
+# Une page man absente parce que l'outil correspondant n'est pas installé
+# localement n'est pas une erreur : ce n'est pas la faute du script.
 [[ ${FAIL_COUNT} -eq 0 ]] || exit 1
