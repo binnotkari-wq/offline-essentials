@@ -1,0 +1,293 @@
+#!/usr/bin/env bash
+#
+# ressources.sh — Kit de survie Linux offline complet
+# (Docs Git, E-books, Repos GitHub perso, Modèles LLM, Archives ZIM Kiwix & Pages Man HTML)
+
+set -euo pipefail
+
+export PATH="/usr/bin:/bin:/usr/local/bin:$PATH"
+
+# Chemins absolus basés sur l'emplacement du script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOCS_DIR="${SCRIPT_DIR}/github_docs"
+EBOOKS_DIR="${SCRIPT_DIR}/ebooks"
+PUBLIC_REPOS_DIR="${SCRIPT_DIR}/git"
+LLMS_DIR="${SCRIPT_DIR}/llm"
+ZIMS_DIR="${SCRIPT_DIR}/zims"
+MAN_DIR="${SCRIPT_DIR}/man"
+
+# Création explicite des dossiers cibles
+mkdir -p "${DOCS_DIR}" "${EBOOKS_DIR}" "${PUBLIC_REPOS_DIR}" "${LLMS_DIR}" "${ZIMS_DIR}" "${MAN_DIR}"
+
+# --- DECLARATION DES RESSOURCES ---
+
+# 1. Dépôts Git externes (Documentation & exemples uniquement)
+declare -A REPOS=(
+  ["tldr-pages"]="https://github.com/tldr-pages/tldr.git"
+  ["pure-bash-bible"]="https://github.com/dylanaraps/pure-bash-bible.git"
+  ["pure-sh-bible"]="https://github.com/dylanaraps/pure-sh-bible.git"
+  ["just-docs"]="https://github.com/casey/just.git"
+  ["podman-docs"]="https://github.com/containers/podman.git"
+  ["buildah-docs"]="https://github.com/containers/buildah.git"
+  ["bootc-docs"]="https://github.com/containers/bootc.git"
+  ["flatpak-docs"]="https://github.com/flatpak/flatpak-docs.git"
+  ["wine-docs"]="https://gitlab.winehq.org/wine/wine.git"
+  ["btrfs-docs"]="https://github.com/kdave/btrfs-devel.git"
+  ["cryptsetup-docs"]="https://gitlab.com/CRYPTSETUP/cryptsetup.git"
+  ["progit2-book"]="https://github.com/progit/progit2.git"
+  ["gnome-user-docs"]="https://gitlab.gnome.org/GNOME/gnome-user-docs.git"
+  ["nixpkgs-manual"]="https://github.com/NixOS/nixpkgs.git"
+  ["nixos-manual"]="https://github.com/NixOS/nixpkgs.git"
+  ["ostree-docs"]="https://github.com/ostreedev/ostree.git"
+)
+
+# 2. E-books (PDF / EPUB / Archives PDF)
+declare -A EBOOKS=(
+  ["The_Linux_Command_Line_19.01.pdf"]="https://sourceforge.net/projects/linuxcommand/files/TLCL/19.01/TLCL-19.01.pdf/download"
+  ["The_Linux_Command_Line_25.12A.pdf"]="https://sourceforge.net/projects/linuxcommand/files/TLCL/25.12/TLCL-25.12A.pdf/download"
+  ["Linux_Fundamentals_Cobbaut.pdf"]="https://linux-training.be/linuxtraining_20211003.pdf"
+  ["Linux Fundamentals.pdf"]="http://linux-training.be/linuxfun.pdf"
+  ["System Administration.pdf"]="http://linux-training.be/linuxsys.pdf"
+  ["Linux Servers.pdf"]="http://linux-training.be/linuxsrv.pdf"
+  ["Linux Storage.pdf"]="http://linux-training.be/linuxsto.pdf"
+  ["Linux Security.pdf"]="http://linux-training.be/linuxsec.pdf"
+  ["Linux Networking.pdf"]="http://linux-training.be/linuxnet.pdf"
+  ["Pro_Git_FR.pdf"]="https://github.com/progit/progit2-fr/releases/download/2.1.78/progit.pdf"
+  ["Linux_Kernel_In_A_Nutshell.tar.gz"]="http://files.kroah.com/lkn/lkn_pdf.tar.gz"
+  ["Advanced_Bash_Scripting_Guide.pdf"]="https://tldp.org/LDP/abs/abs-guide.pdf"
+  ["debian-handbook.epub"]="http://debian-handbook.info/download/fr-FR/stable/debian-handbook.epub"
+)
+
+# 3. Dépôts GitHub personnels (Clonage complet)
+declare -A PUBLIC_REPOS=(
+  ["mini-projects"]="https://github.com/binnotkari-wq/mini-projects.git"
+  ["nixos-dotfiles"]="https://github.com/binnotkari-wq/nixos-dotfiles.git"
+  ["post-install"]="https://github.com/binnotkari-wq/post-install.git"
+  ["scripts"]="https://github.com/binnotkari-wq/scripts.git"
+  ["silverblue_bootc"]="https://github.com/binnotkari-wq/silverblue_bootc.git"
+)
+
+# 4. Modèles LLM GGUF
+declare -A LLMS=(
+  ["Qwen3.5-4B-Q4_K_M.gguf"]="https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf"
+)
+
+# 5. Archives ZIM (Kiwix)
+declare -A ZIMS=(
+  ["archlinux_en_all_maxi_2026-07.zim"]="https://mirror.download.kiwix.org/zim/other/archlinux_en_all_maxi_2026-07.zim"
+  ["devdocs_en_man_2026-07.zim"]="https://mirror.download.kiwix.org/zim/devdocs/devdocs_en_man_2026-07.zim"
+  ["kris-occhipinti_en_all_2026-07.zim"]="https://mirror.download.kiwix.org/zim/videos/kris-occhipinti_en_all_2026-07.zim"
+  ["gentoo_en_all_maxi_2026-07.zim"]="https://mirror.download.kiwix.org/zim/other/gentoo_en_all_maxi_2026-07.zim"
+  ["alpinelinux_en_all_maxi_2026-07.zim"]="https://mirror.download.kiwix.org/zim/other/alpinelinux_en_all_maxi_2026-07.zim"
+)
+
+declare -i SUCCESS_COUNT=0
+declare -i FAIL_COUNT=0
+FAILED_ITEMS=()
+
+echo "================================================="
+echo " Synchronisation du kit de survie Linux offline  "
+echo " Dossier cible : ${SCRIPT_DIR}"
+echo "================================================="
+echo ""
+
+# --- SECTION 1 : DEPOTS GIT (DOCS & EXEMPLES SEULEMENT) ---
+echo "=== 1. Traitement des dépôts de documentation Git (Mode Light) ==="
+
+for NAME in "${!REPOS[@]}"; do
+  URL="${REPOS[$NAME]}"
+  TARGET_PATH="${DOCS_DIR}/${NAME}"
+  echo "-------------------------------------------------"
+  echo "--> Dépôt doc : ${NAME}"
+
+  rm -rf "${TARGET_PATH}"
+
+  if git clone --depth 1 --filter=blob:none --no-checkout --quiet "${URL}" "${TARGET_PATH}"; then
+    pushd "${TARGET_PATH}" >/dev/null
+    
+    git sparse-checkout init --cone >/dev/null 2>&1 || true
+    git sparse-checkout set doc docs documentation examples example man pages README* >/dev/null 2>&1 || \
+    git sparse-checkout set /* >/dev/null 2>&1 || true
+    git checkout --quiet 2>/dev/null || true
+
+    # Nettoyage .git et code source
+    rm -rf .git
+    find . -type f \( -name "*.c" -o -name "*.h" -o -name "*.go" -o -name "*.rs" -o -name "*.o" \) -delete 2>/dev/null || true
+
+    popd >/dev/null
+    echo "    Statut : OK (Documentation extraite)"
+    SUCCESS_COUNT+=1
+  else
+    echo "    Statut : ÉCHEC lors de la récupération"
+    FAIL_COUNT+=1
+    FAILED_ITEMS+=("Repo Doc: ${NAME}")
+  fi
+done
+
+echo ""
+# --- SECTION 2 : E-BOOKS ---
+echo "=== 2. Téléchargement des e-books et manuels ==="
+
+for FILE in "${!EBOOKS[@]}"; do
+  URL="${EBOOKS[$FILE]}"
+  TARGET_FILE="${EBOOKS_DIR}/${FILE}"
+  echo "-------------------------------------------------"
+  echo "--> E-book : ${FILE}"
+
+  if [ -f "${TARGET_FILE}" ]; then
+    echo "    Mode : Déjà présent (vérification des en-têtes)"
+    if curl -sSL -z "${TARGET_FILE}" -o "${TARGET_FILE}" "${URL}"; then
+      echo "    Statut : OK (À jour)"
+      SUCCESS_COUNT+=1
+    else
+      echo "    Statut : ÉCHEC de la mise à jour"
+      FAIL_COUNT+=1
+      FAILED_ITEMS+=("Ebook: ${FILE}")
+    fi
+  else
+    echo "    Mode : Téléchargement..."
+    if curl -sSL -L -o "${TARGET_FILE}" "${URL}"; then
+      echo "    Statut : OK (Téléchargé)"
+      SUCCESS_COUNT+=1
+    else
+      echo "    Statut : ÉCHEC du téléchargement"
+      FAIL_COUNT+=1
+      FAILED_ITEMS+=("Ebook: ${FILE}")
+    fi
+  fi
+done
+
+# Décompression de l'archive du noyau si présente
+if [ -f "${EBOOKS_DIR}/Linux_Kernel_In_A_Nutshell.tar.gz" ]; then
+  echo "-------------------------------------------------"
+  echo "--> Extraction de l'archive du Kernel Linux..."
+  tar -xzf "${EBOOKS_DIR}/Linux_Kernel_In_A_Nutshell.tar.gz" -C "${EBOOKS_DIR}" 2>/dev/null || true
+fi
+
+echo ""
+# --- SECTION 3 : REPOS GITHUB PERSONNELS ---
+echo "=== 3. Synchronisation des dépôts GitHub personnels ==="
+
+for NAME in "${!PUBLIC_REPOS[@]}"; do
+  URL="${PUBLIC_REPOS[$NAME]}"
+  TARGET_PATH="${PUBLIC_REPOS_DIR}/${NAME}"
+  echo "-------------------------------------------------"
+  echo "--> Dépôt perso : ${NAME}"
+
+  if [ -d "${TARGET_PATH}/.git" ]; then
+    echo "    Mode : Mise à jour (git pull)"
+    if git -C "${TARGET_PATH}" pull --quiet; then
+      echo "    Statut : OK (Mis à jour)"
+      SUCCESS_COUNT+=1
+    else
+      echo "    Statut : ÉCHEC du pull"
+      FAIL_COUNT+=1
+      FAILED_ITEMS+=("Repo Perso: ${NAME}")
+    fi
+  else
+    echo "    Mode : Clonage complet..."
+    if git clone --quiet "${URL}" "${TARGET_PATH}"; then
+      echo "    Statut : OK (Cloné)"
+      SUCCESS_COUNT+=1
+    else
+      echo "    Statut : ÉCHEC du clonage"
+      FAIL_COUNT+=1
+      FAILED_ITEMS+=("Repo Perso: ${NAME}")
+    fi
+  fi
+done
+
+echo ""
+# --- SECTION 4 : MODÈLES LLM ---
+echo "=== 4. Téléchargement des modèles LLM (GGUF) ==="
+
+for FILE in "${!LLMS[@]}"; do
+  URL="${LLMS[$FILE]}"
+  TARGET_FILE="${LLMS_DIR}/${FILE}"
+  echo "-------------------------------------------------"
+  echo "--> Modèle LLM : ${FILE}"
+
+  if [ -f "${TARGET_FILE}" ]; then
+    echo "    Mode : Vérification / Reprise du téléchargement..."
+  else
+    echo "    Mode : Démarrage du téléchargement..."
+  fi
+
+  # Utilisation de -C - pour reprise sur interruption et -# pour la barre de progression
+  if curl -sSL -C - -L -# -o "${TARGET_FILE}" "${URL}"; then
+    echo "    Statut : OK (Téléchargé)"
+    SUCCESS_COUNT+=1
+  else
+    echo "    Statut : ÉCHEC du téléchargement"
+    FAIL_COUNT+=1
+    FAILED_ITEMS+=("LLM: ${FILE}")
+  fi
+done
+
+echo ""
+# --- SECTION 5 : ARCHIVES ZIM (KIWIX) ---
+echo "=== 5. Téléchargement des archives ZIM (Kiwix) ==="
+
+for FILE in "${!ZIMS[@]}"; do
+  URL="${ZIMS[$FILE]}"
+  TARGET_FILE="${ZIMS_DIR}/${FILE}"
+  echo "-------------------------------------------------"
+  echo "--> Archive ZIM : ${FILE}"
+
+  if [ -f "${TARGET_FILE}" ]; then
+    echo "    Mode : Vérification / Reprise du téléchargement..."
+  else
+    echo "    Mode : Démarrage du téléchargement..."
+  fi
+
+  if curl -sSL -C - -L -# -o "${TARGET_FILE}" "${URL}"; then
+    echo "    Statut : OK (Téléchargé)"
+    SUCCESS_COUNT+=1
+  else
+    echo "    Statut : ÉCHEC du téléchargement"
+    FAIL_COUNT+=1
+    FAILED_ITEMS+=("ZIM: ${FILE}")
+  fi
+done
+
+echo ""
+# --- SECTION 6 : EXPORT DES PAGES MAN SYSTEME ---
+echo "=== 6. Export des pages man système vers HTML ==="
+
+if command -v man2html >/dev/null 2>&1; then
+  for page in bash podman buildah bootc flatpak wine btrfs cryptsetup git just; do
+    MANPATH_FILE="$(man -w "${page}" 2>/dev/null || true)"
+    
+    if [ -n "${MANPATH_FILE}" ] && [ -f "${MANPATH_FILE}" ]; then
+      if [[ "${MANPATH_FILE}" == *.gz ]]; then
+        gzip -dc "${MANPATH_FILE}" | man2html > "${MAN_DIR}/${page}.html" 2>/dev/null || true
+      else
+        man2html "${MANPATH_FILE}" > "${MAN_DIR}/${page}.html" 2>/dev/null || true
+      fi
+      echo "  [OK] Page man exportée : ${page}"
+      SUCCESS_COUNT+=1
+    else
+      echo "  [IGNORÉ] Page man introuvable : ${page}"
+      FAIL_COUNT+=1
+      FAILED_ITEMS+=("Man Page: ${page}")
+    fi
+  done
+  echo "Pages man générées dans ${MAN_DIR}/"
+else
+  echo "Avertissement: 'man2html' n'est pas installé dans le conteneur. Étape ignorée."
+fi
+
+# --- BILAN FINAL ---
+echo ""
+echo "================================================="
+echo " Résumé de la synchronisation                    "
+echo " Succès : ${SUCCESS_COUNT}"
+echo " Échecs : ${FAIL_COUNT}"
+
+if [ ${FAIL_COUNT} -gt 0 ]; then
+  echo " Éléments en échec :"
+  for ITEM in "${FAILED_ITEMS[@]}"; do
+    echo "   - ${ITEM}"
+  done
+fi
+echo "================================================="
