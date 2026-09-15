@@ -28,6 +28,10 @@ flatpak-install:
 provision:
     ./reading_tools/provision.sh
 
+# Empaquette le kit en un unique fichier SquashFS vérifiable (offline-essentials.sqfs)
+package:
+    ./package.sh
+
 # Bilan de l'espace disque occupé par le dataset
 check-space:
     @echo "=========================================="
@@ -45,7 +49,8 @@ check-space:
 list:
     @ostree refs --repo="./flatpak-repo/.ostree/repo" 2>/dev/null || echo "Dépôt local vide ou inexistant : ./flatpak-repo/.ostree/repo"
 
-# Reconstruit l'intégralité du kit, dans l'ordre : ressources -> flatpaks -> outils
+# Reconstruit l'intégralité du kit, dans l'ordre : ressources -> flatpaks -> outils -> bilan
 all: sync flatpak-download provision check-space
     @echo "Kit offline-essentials reconstruit. Copiez le dépôt sur la machine cible,"
     @echo "puis lancez 'just flatpak-install' une fois sur place."
+    @echo "Pour un fichier unique à transférer, lancez ensuite 'just package'."
