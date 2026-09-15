@@ -23,7 +23,7 @@ set -euo pipefail
 # --- Configuration ---------------------------------------------------------
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 JSON_FILE="${JSON_FILE:-${SCRIPT_DIR}/flatpaks.json}"
-REPO_DIR="${REPO_DIR:-${SCRIPT_DIR}/flatpak-repo}"
+REPO_DIR="${REPO_DIR:-${SCRIPT_DIR}}"
 DEFAULT_REMOTE="${DEFAULT_REMOTE:-flathub}"
 DEFAULT_BRANCH="${DEFAULT_BRANCH:-stable}"
 FLATHUB_URL="${FLATHUB_URL:-https://dl.flathub.org/repo/flathub.flatpakrepo}"

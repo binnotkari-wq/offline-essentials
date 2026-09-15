@@ -15,6 +15,7 @@ Le dépôt est prévu pour être rempli/actualisé sur une machine connectée, p
 ```
 offline-essentials/
 ├── justfile                    # Orchestration de l'ensemble
+├── package.sh                   # Empaquette le kit en un fichier SquashFS unique
 ├── flatpak-repo/
 │   ├── flatpaks.json            # Liste déclarative des applications Flatpak
 │   ├── download-flatpaks.sh     # Construit un dépôt OSTree offline (sideload)
@@ -65,13 +66,25 @@ Télécharge et extrait quatre binaires précompilés, sans dépendance système
 
 **Choix technique** : binaires standalone plutôt que paquets système, pour rester indépendant de la distribution cible et ne pas polluer sa configuration — cohérent avec l'objectif "kit sans référence à une distribution particulière".
 
+### `package.sh` — Empaquetage en un fichier unique
+
+Empaquette `flatpak-repo/`, `ressources/` et `reading_tools/` en un seul fichier **SquashFS** (`offline-essentials.sqfs`), accompagné de sa somme de contrôle (`offline-essentials.sqfs.sha256`).
+
+**Choix technique** : SquashFS plutôt qu'une simple archive tar/zip, pour deux raisons — un seul fichier compressé (zstd), facile à copier ou transférer, et surtout un format **en lecture seule par construction** : contrairement à un dossier ou une archive extraite, un SquashFS ne peut pas être remonté en écriture, ce qui garantit qu'il reste identique à ce qu'il était au moment de l'empaquetage. La somme SHA-256 générée à côté permet de vérifier l'intégrité après transfert, sur le même principe que le MD5 publié pour l'ISO du projet `fedora_custom-bootc`.
+
+Ce fichier est volontairement **indépendant de toute image ou ISO** : il ne modifie ni n'embarque rien dans le pipeline bootc, il se copie simplement où besoin (seconde partition d'une clé USB, disque externe...). Une fois copié, il se monte en lecture seule :
+
+```bash
+sudo mount -o loop,ro offline-essentials.sqfs /mnt/offline-essentials
+```
+
 ### `justfile` — Orchestration
 
-Recette par script (`sync`, `flatpak-download`, `flatpak-install`, `provision`), plus :
+Recette par script (`sync`, `flatpak-download`, `flatpak-install`, `provision`, `package`), plus :
 
 - **`check-space`** : bilan de l'espace disque occupé par le dataset (`df` de la partition, `du` global et par sous-dossier).
 - **`list`** : liste les refs Flatpak présents dans le dépôt OSTree local (`ostree refs`), pour vérifier le contenu déjà téléchargé sans reconstruire le dépôt.
-- **`all`** : enchaîne `sync`, `flatpak-download`, `provision` et `check-space` — reconstruit l'intégralité du kit et affiche son poids final. `flatpak-install` n'en fait volontairement pas partie : c'est une étape à exécuter *sur la machine cible*, hors-ligne, séparément.
+- **`all`** : enchaîne `sync`, `flatpak-download`, `provision` et `check-space` — reconstruit l'intégralité du kit et affiche son poids final. `flatpak-install` n'en fait volontairement pas partie : c'est une étape à exécuter *sur la machine cible*, hors-ligne, séparément. `package` non plus : c'est une étape de transfert, pas de reconstruction.
 
 ## Résultats attendus
 
@@ -88,10 +101,13 @@ Après un `just all` sur une machine connectée, le dépôt contient :
 
 L'ensemble est copiable tel quel sur la machine cible ; une fois là-bas, `just flatpak-install` installe les applications sans réseau, et les binaires de `reading_tools/` permettent de consulter LLM, ZIM et Markdown sans autre dépendance.
 
+Pour un transfert en un seul fichier (clé USB, partage réseau...), `just package` produit `offline-essentials.sqfs` + `offline-essentials.sqfs.sha256` à la racine du dépôt.
+
 ## Prérequis
 
 - `bash`, `curl`, `tar`, `git`, `jq`
 - `flatpak` (version supportant `create-usb`) pour la partie applications
 - `just` pour l'orchestration
+- `squashfs-tools` (`mksquashfs`) pour `just package`
 - `man2html` (optionnel) pour l'export des pages man
 - `ostree` (optionnel) pour `just list`
