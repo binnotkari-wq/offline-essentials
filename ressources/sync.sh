@@ -117,9 +117,19 @@ for NAME in "${!REPOS[@]}"; do
   if git clone --depth 1 --filter=blob:none --no-checkout --quiet "${URL}" "${TARGET_PATH}"; then
     pushd "${TARGET_PATH}" >/dev/null
 
-    git sparse-checkout init --cone >/dev/null 2>&1 || true
-    git sparse-checkout set doc docs documentation examples example man pages README* >/dev/null 2>&1 || \
-      git sparse-checkout set /* >/dev/null 2>&1 || true
+    # Mode --no-cone requis : contrairement au mode cone (par défaut),
+    # il accepte des patterns glob (extensions, README*) en plus des
+    # chemins de dossiers. En mode cone, "README*" ou "/*" sont rejetés
+    # (exit 128) et le sparse-checkout reste bloqué sur son état par
+    # défaut "racine seulement, tous les sous-dossiers exclus" — ce qui
+    # explique la doc manquante sur les repos où docs/ n'est pas au
+    # format Markdown (rst, xml, pdf...).
+    git sparse-checkout init --no-cone >/dev/null 2>&1
+    git sparse-checkout set --no-cone \
+      '/*.md' '/*.rst' '/*.txt' '/*.adoc' '/README*' \
+      '/doc/**' '/docs/**' '/documentation/**' \
+      '/examples/**' '/example/**' '/man/**' '/pages/**' \
+      >/dev/null 2>&1 || true
     git checkout --quiet 2>/dev/null || true
 
     # Nettoyage .git et code source (on ne garde que la doc)
