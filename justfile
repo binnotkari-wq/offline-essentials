@@ -43,7 +43,7 @@ check-space:
 
 # Liste les refs (applications) présentes dans le dépôt local
 list:
-    @ostree refs --repo="{{repo_dir}}/.ostree/repo" 2>/dev/null || echo "Dépôt local vide ou inexistant : {{repo_dir}}/.ostree/repo"
+    @ostree refs --repo="./flatpak-repo/.ostree/repo" 2>/dev/null || echo "Dépôt local vide ou inexistant : ./flatpak-repo/.ostree/repo"
 
 # Reconstruit l'intégralité du kit, dans l'ordre : ressources -> flatpaks -> outils
 all: sync flatpak-download provision check-space
