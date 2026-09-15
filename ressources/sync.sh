@@ -74,6 +74,7 @@ declare -A PUBLIC_REPOS=(
   ["post-install"]="https://github.com/binnotkari-wq/post-install.git"
   ["scripts"]="https://github.com/binnotkari-wq/scripts.git"
   ["silverblue_bootc"]="https://github.com/binnotkari-wq/silverblue_bootc.git"
+  ["offline-essentials"]="https://github.com/binnotkari-wq/offline-essentials.git"
 )
 
 # 4. Modèles LLM GGUF
