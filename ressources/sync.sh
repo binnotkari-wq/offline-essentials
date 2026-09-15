@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
 #
-# ressources.sh — Kit de survie Linux offline complet
-# (Docs Git, E-books, Repos GitHub perso, Modèles LLM, Archives ZIM Kiwix & Pages Man HTML)
+# sync.sh
+#
+# Kit de survie Linux offline : synchronise en local la documentation
+# (dépôts Git en mode "sparse", e-books, dépôts GitHub personnels),
+# des modèles LLM GGUF, des archives ZIM (Kiwix), et exporte les pages
+# man système en HTML.
+#
+# Idempotent : les dépôts de doc sont reclonés à chaque exécution (léger,
+# --depth 1), les e-books/LLM/ZIM ne sont retéléchargés que si absents ou
+# obsolètes (curl -z / -C -), les dépôts perso font un `git pull`.
 
 set -euo pipefail
 
-export PATH="/usr/bin:/bin:/usr/local/bin:$PATH"
+export PATH="/usr/bin:/bin:/usr/local/bin:${PATH}"
 
-# Chemins absolus basés sur l'emplacement du script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 DOCS_DIR="${SCRIPT_DIR}/github_docs"
 EBOOKS_DIR="${SCRIPT_DIR}/ebooks"
 PUBLIC_REPOS_DIR="${SCRIPT_DIR}/git"
@@ -16,12 +23,14 @@ LLMS_DIR="${SCRIPT_DIR}/llm"
 ZIMS_DIR="${SCRIPT_DIR}/zims"
 MAN_DIR="${SCRIPT_DIR}/man"
 
-# Création explicite des dossiers cibles
+log()  { printf '[sync] %s\n' "$*"; }
+die()  { printf '[sync] ERREUR: %s\n' "$*" >&2; exit 1; }
+
 mkdir -p "${DOCS_DIR}" "${EBOOKS_DIR}" "${PUBLIC_REPOS_DIR}" "${LLMS_DIR}" "${ZIMS_DIR}" "${MAN_DIR}"
 
-# --- DECLARATION DES RESSOURCES ---
+# --- DECLARATION DES RESSOURCES ---------------------------------------------
 
-# 1. Dépôts Git externes (Documentation & exemples uniquement)
+# 1. Dépôts Git externes (documentation & exemples uniquement, mode "light")
 declare -A REPOS=(
   ["tldr-pages"]="https://github.com/tldr-pages/tldr.git"
   ["pure-bash-bible"]="https://github.com/dylanaraps/pure-bash-bible.git"
@@ -41,7 +50,7 @@ declare -A REPOS=(
   ["ostree-docs"]="https://github.com/ostreedev/ostree.git"
 )
 
-# 2. E-books (PDF / EPUB / Archives PDF)
+# 2. E-books (PDF / EPUB / archives PDF)
 declare -A EBOOKS=(
   ["The_Linux_Command_Line_19.01.pdf"]="https://sourceforge.net/projects/linuxcommand/files/TLCL/19.01/TLCL-19.01.pdf/download"
   ["The_Linux_Command_Line_25.12A.pdf"]="https://sourceforge.net/projects/linuxcommand/files/TLCL/25.12/TLCL-25.12A.pdf/download"
@@ -58,7 +67,7 @@ declare -A EBOOKS=(
   ["debian-handbook.epub"]="http://debian-handbook.info/download/fr-FR/stable/debian-handbook.epub"
 )
 
-# 3. Dépôts GitHub personnels (Clonage complet)
+# 3. Dépôts GitHub personnels (clonage/pull complet)
 declare -A PUBLIC_REPOS=(
   ["mini-projects"]="https://github.com/binnotkari-wq/mini-projects.git"
   ["nixos-dotfiles"]="https://github.com/binnotkari-wq/nixos-dotfiles.git"
@@ -81,213 +90,197 @@ declare -A ZIMS=(
   ["alpinelinux_en_all_maxi_2026-07.zim"]="https://mirror.download.kiwix.org/zim/other/alpinelinux_en_all_maxi_2026-07.zim"
 )
 
+# 6. Pages man système à exporter en HTML
+MAN_PAGES=(bash podman buildah bootc flatpak wine btrfs cryptsetup git just)
+
 declare -i SUCCESS_COUNT=0
 declare -i FAIL_COUNT=0
 FAILED_ITEMS=()
 
-echo "================================================="
-echo " Synchronisation du kit de survie Linux offline  "
-echo " Dossier cible : ${SCRIPT_DIR}"
-echo "================================================="
-echo ""
+log "================================================="
+log " Synchronisation du kit de survie Linux offline"
+log " Dossier cible : ${SCRIPT_DIR}"
+log "================================================="
 
-# --- SECTION 1 : DEPOTS GIT (DOCS & EXEMPLES SEULEMENT) ---
-echo "=== 1. Traitement des dépôts de documentation Git (Mode Light) ==="
+# --- SECTION 1 : DEPOTS GIT (DOCS & EXEMPLES SEULEMENT, MODE LIGHT) ---------
+log "=== 1. Dépôts de documentation Git (mode light) ==="
 
 for NAME in "${!REPOS[@]}"; do
-  URL="${REPOS[$NAME]}"
+  URL="${REPOS[${NAME}]}"
   TARGET_PATH="${DOCS_DIR}/${NAME}"
-  echo "-------------------------------------------------"
-  echo "--> Dépôt doc : ${NAME}"
+  log "-> Dépôt doc : ${NAME}"
 
   rm -rf "${TARGET_PATH}"
 
   if git clone --depth 1 --filter=blob:none --no-checkout --quiet "${URL}" "${TARGET_PATH}"; then
     pushd "${TARGET_PATH}" >/dev/null
-    
+
     git sparse-checkout init --cone >/dev/null 2>&1 || true
     git sparse-checkout set doc docs documentation examples example man pages README* >/dev/null 2>&1 || \
-    git sparse-checkout set /* >/dev/null 2>&1 || true
+      git sparse-checkout set /* >/dev/null 2>&1 || true
     git checkout --quiet 2>/dev/null || true
 
-    # Nettoyage .git et code source
+    # Nettoyage .git et code source (on ne garde que la doc)
     rm -rf .git
     find . -type f \( -name "*.c" -o -name "*.h" -o -name "*.go" -o -name "*.rs" -o -name "*.o" \) -delete 2>/dev/null || true
 
     popd >/dev/null
-    echo "    Statut : OK (Documentation extraite)"
+    log "   OK  ${NAME} (documentation extraite)"
     SUCCESS_COUNT+=1
   else
-    echo "    Statut : ÉCHEC lors de la récupération"
+    log "   ÉCHEC récupération de ${NAME}"
     FAIL_COUNT+=1
     FAILED_ITEMS+=("Repo Doc: ${NAME}")
   fi
 done
 
-echo ""
-# --- SECTION 2 : E-BOOKS ---
-echo "=== 2. Téléchargement des e-books et manuels ==="
+# --- SECTION 2 : E-BOOKS ----------------------------------------------------
+log "=== 2. E-books et manuels ==="
 
 for FILE in "${!EBOOKS[@]}"; do
-  URL="${EBOOKS[$FILE]}"
+  URL="${EBOOKS[${FILE}]}"
   TARGET_FILE="${EBOOKS_DIR}/${FILE}"
-  echo "-------------------------------------------------"
-  echo "--> E-book : ${FILE}"
+  log "-> E-book : ${FILE}"
 
-  if [ -f "${TARGET_FILE}" ]; then
-    echo "    Mode : Déjà présent (vérification des en-têtes)"
-    if curl -sSL -z "${TARGET_FILE}" -o "${TARGET_FILE}" "${URL}"; then
-      echo "    Statut : OK (À jour)"
-      SUCCESS_COUNT+=1
-    else
-      echo "    Statut : ÉCHEC de la mise à jour"
-      FAIL_COUNT+=1
-      FAILED_ITEMS+=("Ebook: ${FILE}")
-    fi
+  if [[ -f "${TARGET_FILE}" ]]; then
+    log "   Mode : déjà présent (vérification des en-têtes)"
   else
-    echo "    Mode : Téléchargement..."
-    if curl -sSL -L -o "${TARGET_FILE}" "${URL}"; then
-      echo "    Statut : OK (Téléchargé)"
-      SUCCESS_COUNT+=1
-    else
-      echo "    Statut : ÉCHEC du téléchargement"
-      FAIL_COUNT+=1
-      FAILED_ITEMS+=("Ebook: ${FILE}")
-    fi
+    log "   Mode : téléchargement..."
+  fi
+
+  if curl -sSL -z "${TARGET_FILE}" -o "${TARGET_FILE}" "${URL}"; then
+    log "   OK  ${FILE}"
+    SUCCESS_COUNT+=1
+  else
+    log "   ÉCHEC téléchargement de ${FILE}"
+    FAIL_COUNT+=1
+    FAILED_ITEMS+=("Ebook: ${FILE}")
   fi
 done
 
 # Décompression de l'archive du noyau si présente
-if [ -f "${EBOOKS_DIR}/Linux_Kernel_In_A_Nutshell.tar.gz" ]; then
-  echo "-------------------------------------------------"
-  echo "--> Extraction de l'archive du Kernel Linux..."
+if [[ -f "${EBOOKS_DIR}/Linux_Kernel_In_A_Nutshell.tar.gz" ]]; then
+  log "-> Extraction de l'archive du noyau Linux..."
   tar -xzf "${EBOOKS_DIR}/Linux_Kernel_In_A_Nutshell.tar.gz" -C "${EBOOKS_DIR}" 2>/dev/null || true
 fi
 
-echo ""
-# --- SECTION 3 : REPOS GITHUB PERSONNELS ---
-echo "=== 3. Synchronisation des dépôts GitHub personnels ==="
+# --- SECTION 3 : REPOS GITHUB PERSONNELS ------------------------------------
+log "=== 3. Dépôts GitHub personnels ==="
 
 for NAME in "${!PUBLIC_REPOS[@]}"; do
-  URL="${PUBLIC_REPOS[$NAME]}"
+  URL="${PUBLIC_REPOS[${NAME}]}"
   TARGET_PATH="${PUBLIC_REPOS_DIR}/${NAME}"
-  echo "-------------------------------------------------"
-  echo "--> Dépôt perso : ${NAME}"
+  log "-> Dépôt perso : ${NAME}"
 
-  if [ -d "${TARGET_PATH}/.git" ]; then
-    echo "    Mode : Mise à jour (git pull)"
+  if [[ -d "${TARGET_PATH}/.git" ]]; then
+    log "   Mode : mise à jour (git pull)"
     if git -C "${TARGET_PATH}" pull --quiet; then
-      echo "    Statut : OK (Mis à jour)"
+      log "   OK  ${NAME} (mis à jour)"
       SUCCESS_COUNT+=1
     else
-      echo "    Statut : ÉCHEC du pull"
+      log "   ÉCHEC pull de ${NAME}"
       FAIL_COUNT+=1
       FAILED_ITEMS+=("Repo Perso: ${NAME}")
     fi
   else
-    echo "    Mode : Clonage complet..."
+    log "   Mode : clonage complet..."
     if git clone --quiet "${URL}" "${TARGET_PATH}"; then
-      echo "    Statut : OK (Cloné)"
+      log "   OK  ${NAME} (cloné)"
       SUCCESS_COUNT+=1
     else
-      echo "    Statut : ÉCHEC du clonage"
+      log "   ÉCHEC clonage de ${NAME}"
       FAIL_COUNT+=1
       FAILED_ITEMS+=("Repo Perso: ${NAME}")
     fi
   fi
 done
 
-echo ""
-# --- SECTION 4 : MODÈLES LLM ---
-echo "=== 4. Téléchargement des modèles LLM (GGUF) ==="
+# --- SECTION 4 : MODÈLES LLM ------------------------------------------------
+log "=== 4. Modèles LLM (GGUF) ==="
 
 for FILE in "${!LLMS[@]}"; do
-  URL="${LLMS[$FILE]}"
+  URL="${LLMS[${FILE}]}"
   TARGET_FILE="${LLMS_DIR}/${FILE}"
-  echo "-------------------------------------------------"
-  echo "--> Modèle LLM : ${FILE}"
+  log "-> Modèle LLM : ${FILE}"
 
-  if [ -f "${TARGET_FILE}" ]; then
-    echo "    Mode : Vérification / Reprise du téléchargement..."
+  if [[ -f "${TARGET_FILE}" ]]; then
+    log "   Mode : vérification / reprise du téléchargement..."
   else
-    echo "    Mode : Démarrage du téléchargement..."
+    log "   Mode : démarrage du téléchargement..."
   fi
 
-  # Utilisation de -C - pour reprise sur interruption et -# pour la barre de progression
   if curl -sSL -C - -L -# -o "${TARGET_FILE}" "${URL}"; then
-    echo "    Statut : OK (Téléchargé)"
+    log "   OK  ${FILE}"
     SUCCESS_COUNT+=1
   else
-    echo "    Statut : ÉCHEC du téléchargement"
+    log "   ÉCHEC téléchargement de ${FILE}"
     FAIL_COUNT+=1
     FAILED_ITEMS+=("LLM: ${FILE}")
   fi
 done
 
-echo ""
-# --- SECTION 5 : ARCHIVES ZIM (KIWIX) ---
-echo "=== 5. Téléchargement des archives ZIM (Kiwix) ==="
+# --- SECTION 5 : ARCHIVES ZIM (KIWIX) ---------------------------------------
+log "=== 5. Archives ZIM (Kiwix) ==="
 
 for FILE in "${!ZIMS[@]}"; do
-  URL="${ZIMS[$FILE]}"
+  URL="${ZIMS[${FILE}]}"
   TARGET_FILE="${ZIMS_DIR}/${FILE}"
-  echo "-------------------------------------------------"
-  echo "--> Archive ZIM : ${FILE}"
+  log "-> Archive ZIM : ${FILE}"
 
-  if [ -f "${TARGET_FILE}" ]; then
-    echo "    Mode : Vérification / Reprise du téléchargement..."
+  if [[ -f "${TARGET_FILE}" ]]; then
+    log "   Mode : vérification / reprise du téléchargement..."
   else
-    echo "    Mode : Démarrage du téléchargement..."
+    log "   Mode : démarrage du téléchargement..."
   fi
 
   if curl -sSL -C - -L -# -o "${TARGET_FILE}" "${URL}"; then
-    echo "    Statut : OK (Téléchargé)"
+    log "   OK  ${FILE}"
     SUCCESS_COUNT+=1
   else
-    echo "    Statut : ÉCHEC du téléchargement"
+    log "   ÉCHEC téléchargement de ${FILE}"
     FAIL_COUNT+=1
     FAILED_ITEMS+=("ZIM: ${FILE}")
   fi
 done
 
-echo ""
-# --- SECTION 6 : EXPORT DES PAGES MAN SYSTEME ---
-echo "=== 6. Export des pages man système vers HTML ==="
+# --- SECTION 6 : EXPORT DES PAGES MAN SYSTÈME -------------------------------
+log "=== 6. Export des pages man système vers HTML ==="
 
 if command -v man2html >/dev/null 2>&1; then
-  for page in bash podman buildah bootc flatpak wine btrfs cryptsetup git just; do
+  for page in "${MAN_PAGES[@]}"; do
     MANPATH_FILE="$(man -w "${page}" 2>/dev/null || true)"
-    
-    if [ -n "${MANPATH_FILE}" ] && [ -f "${MANPATH_FILE}" ]; then
+
+    if [[ -n "${MANPATH_FILE}" && -f "${MANPATH_FILE}" ]]; then
       if [[ "${MANPATH_FILE}" == *.gz ]]; then
         gzip -dc "${MANPATH_FILE}" | man2html > "${MAN_DIR}/${page}.html" 2>/dev/null || true
       else
         man2html "${MANPATH_FILE}" > "${MAN_DIR}/${page}.html" 2>/dev/null || true
       fi
-      echo "  [OK] Page man exportée : ${page}"
+      log "   OK  page man exportée : ${page}"
       SUCCESS_COUNT+=1
     else
-      echo "  [IGNORÉ] Page man introuvable : ${page}"
+      log "   IGNORÉ page man introuvable : ${page}"
       FAIL_COUNT+=1
       FAILED_ITEMS+=("Man Page: ${page}")
     fi
   done
-  echo "Pages man générées dans ${MAN_DIR}/"
+  log "Pages man générées dans ${MAN_DIR}/"
 else
-  echo "Avertissement: 'man2html' n'est pas installé dans le conteneur. Étape ignorée."
+  log "AVERTISSEMENT: 'man2html' n'est pas installé. Étape ignorée."
 fi
 
-# --- BILAN FINAL ---
-echo ""
-echo "================================================="
-echo " Résumé de la synchronisation                    "
-echo " Succès : ${SUCCESS_COUNT}"
-echo " Échecs : ${FAIL_COUNT}"
+# --- BILAN FINAL -------------------------------------------------------------
+log "================================================="
+log " Résumé de la synchronisation"
+log " Succès : ${SUCCESS_COUNT}"
+log " Échecs : ${FAIL_COUNT}"
 
-if [ ${FAIL_COUNT} -gt 0 ]; then
-  echo " Éléments en échec :"
+if [[ ${FAIL_COUNT} -gt 0 ]]; then
+  log " Éléments en échec :"
   for ITEM in "${FAILED_ITEMS[@]}"; do
-    echo "   - ${ITEM}"
+    log "   - ${ITEM}"
   done
 fi
-echo "================================================="
+log "================================================="
+
+[[ ${FAIL_COUNT} -eq 0 ]] || exit 1
