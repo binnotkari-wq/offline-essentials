@@ -1,0 +1,84 @@
+aria2
+# Lecteur/éditeur terminal type mc, gestion fichiers en TUI
+bat
+# cat amélioré avec coloration syntaxique
+btop
+# Moniteur système interactif (remplaçant de htop)
+cliphist
+# Historique de presse-papiers pour Wayland
+cosign
+# Signature et vérification d'images de conteneurs
+curl
+# Client HTTP/FTP en ligne de commande
+dialog
+# Boîtes de dialogue TUI pour scripts shell
+distrobox
+# Conteneurs интеgrés pour environnements de développement isolés
+duf
+# Visualisation de l'usage disque, alternative moderne à df
+fd
+# Recherche de fichiers rapide, alternative à find
+ffmpeg
+# Conversion et traitement audio/vidéo
+font-jetbrains-mono-nerd-font
+# Police monospace avec glyphes Nerd Font (icônes terminal)
+fzf
+# Recherche floue interactive en ligne de commande
+git
+# Système de contrôle de version
+glow
+# Rendu de fichiers Markdown dans le terminal
+groff
+# Système de formatage de documents (utilisé par man)
+imagemagick
+# Manipulation et conversion d'images en ligne de commande
+jq
+# Traitement et requêtage de JSON en ligne de commande
+just
+# Exécuteur de commandes/tâches type Makefile simplifié
+libnotify
+# Envoi de notifications desktop depuis le terminal
+llama.cpp
+# Inférence de modèles de langage en local
+lm-sensors
+# Lecture des capteurs matériels (température, tension...)
+man2html
+# Conversion de pages man en HTML
+mc
+# Gestionnaire de fichiers en mode texte (Midnight Commander)
+mdcat
+# Affichage de fichiers Markdown dans le terminal avec rendu
+msedit
+# Éditeur de texte terminal simple (Microsoft Edit)
+pandoc
+# Conversion universelle entre formats de documents
+pciutils
+# Utilitaires d'inspection des périphériques PCI (lspci...)
+shellcheck
+# Analyseur statique de scripts shell
+shfmt
+# Formateur de scripts shell
+skopeo
+# Inspection et copie d'images de conteneurs sans les exécuter
+smartmontools
+# Surveillance de la santé des disques (S.M.A.R.T.)
+squashfs
+# Outils de création/lecture de systèmes de fichiers compressés SquashFS
+stress-ng
+# Tests de charge et de stabilité système
+tldr
+# Pages d'aide simplifiées, alternative concise à man
+tmux
+# Multiplexeur de terminal
+tree
+# Affichage arborescent de répertoires
+usbutils
+# Utilitaires d'inspection des périphériques USB (lsusb...)
+wget
+# Téléchargement de fichiers en ligne de commande
+yazi
+# Gestionnaire de fichiers terminal moderne en Rust
+yt-dlp
+# Téléchargement de vidéos (YouTube et autres plateformes)
+zoxide
+# Navigation rapide entre répertoires, alternative intelligente à cd

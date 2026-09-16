@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# install-flatpaks.sh
+# flatpak_offline-install.sh
 #
 # Installe (ou met à jour) les flatpaks listés dans le JSON en utilisant
 # le dépôt OSTree local (REPO_DIR/.ostree/repo, généré par
-# download-flatpaks.sh via `flatpak create-usb`) comme source de sideload.
+# flatpak_local-archive.sh via `flatpak create-usb`) comme source de sideload.
 # Fonctionne entièrement hors-ligne une fois REPO_DIR copié sur la machine
 # cible, à condition que le remote d'origine (ex: flathub) y soit déjà
 # configuré AVEC le même collection-id que sur la machine source.
@@ -23,12 +23,12 @@ DEFAULT_BRANCH="${DEFAULT_BRANCH:-stable}"
 FLATHUB_URL="${FLATHUB_URL:-https://dl.flathub.org/repo/flathub.flatpakrepo}"
 FLATHUB_COLLECTION_ID="${FLATHUB_COLLECTION_ID:-org.flathub.Stable}"
 
-log()  { printf '[install-flatpaks] %s\n' "$*"; }
-die()  { printf '[install-flatpaks] ERREUR: %s\n' "$*" >&2; exit 1; }
+log()  { printf '[offline-install] %s\n' "$*"; }
+die()  { printf '[offline-install] ERREUR: %s\n' "$*" >&2; exit 1; }
 
 command -v flatpak >/dev/null 2>&1 || die "flatpak n'est pas installé."
 command -v jq      >/dev/null 2>&1 || die "jq n'est pas installé."
-[[ -d "${SIDELOAD_REPO}" ]] || die "Dépôt OSTree introuvable : ${SIDELOAD_REPO} (copiez le dossier ${REPO_DIR} généré par download-flatpaks.sh)."
+[[ -d "${SIDELOAD_REPO}" ]] || die "Dépôt OSTree introuvable : ${SIDELOAD_REPO} (copiez le dossier ${REPO_DIR} généré par flatpak_local-archive.sh)."
 [[ -f "${JSON_FILE}" ]] || die "Fichier JSON introuvable : ${JSON_FILE}"
 
 # --- Remote d'origine + collection-id (nécessaire même hors-ligne, pour --

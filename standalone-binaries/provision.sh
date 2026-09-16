@@ -71,4 +71,6 @@ else
     log "ÉCHEC provisionnement de mdcat."
 fi
 
+# --- distrobox (standalone) -------------------------------------------------------
+
 log "Terminé."

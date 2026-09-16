@@ -16,13 +16,17 @@ default:
 sync:
     ./ressources/sync.sh
 
-# Télécharge les flatpaks listés et construit le dépôt OSTree offline
-flatpak-download:
-    ./flatpak-repo/download-flatpaks.sh
+# Installe une liste de flatpaks sur la machine courante, EN LIGNE
+flatpak-online-install:
+    ./flatpak-repo/flatpak_online-install.sh
 
-# Installe/actualise les flatpaks depuis le dépôt OSTree sideloadé
-flatpak-install:
-    ./flatpak-repo/install-flatpaks.sh
+# Construit/actualise le dépôt OSTree offline (sideload) depuis une machine en ligne
+flatpak-local-archive:
+    ./flatpak-repo/flatpak_local-archive.sh
+
+# Installe/actualise les flatpaks depuis le dépôt OSTree sideloadé, HORS-LIGNE
+flatpak-offline-install:
+    ./flatpak-repo/flatpak_offline-install.sh
 
 # Provisionne les outils de lecture standalone (llama.cpp, kiwix, glow, mdcat)
 provision:
@@ -50,7 +54,7 @@ list:
     @ostree refs --repo="./flatpak-repo/.ostree/repo" 2>/dev/null || echo "Dépôt local vide ou inexistant : ./flatpak-repo/.ostree/repo"
 
 # Reconstruit l'intégralité du kit, dans l'ordre : ressources -> flatpaks -> outils -> bilan
-all: sync flatpak-download provision check-space
+all: sync flatpak-local-archive provision check-space
     @echo "Kit offline-essentials reconstruit. Copiez le dépôt sur la machine cible,"
-    @echo "puis lancez 'just flatpak-install' une fois sur place."
+    @echo "puis lancez 'just flatpak-offline-install' une fois sur place."
     @echo "Pour un fichier unique à transférer, lancez ensuite 'just package'."
