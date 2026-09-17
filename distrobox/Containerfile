@@ -1,0 +1,47 @@
+FROM registry.fedoraproject.org/fedora-toolbox:latest
+
+RUN dnf install -y \
+    aria2 \
+    bat \
+    btop \
+    cliphist \
+    createrepo_c \
+    curl \
+    dialog \
+    duf \
+    fd-find \
+    ffmpeg \
+    fzf \
+    git \
+    glow \
+    groff \
+    ImageMagick \
+    isomd5sum \
+    jq \
+    just \
+    kiwix-tools \
+    libnotify \
+    libva-utils \
+    lm_sensors \
+    man2html \
+    mc \
+    msedit \
+    ostree \
+    pandoc \
+    pciutils \
+    powertop \
+    s-tui \
+    ShellCheck \
+    shfmt \
+    skopeo \
+    smartmontools \
+    squashfs-tools \
+    stress-ng \
+    tldr \
+    tmux \
+    tree \
+    usbutils \
+    wget \
+    yt-dlp \
+    zoxide \
+    && dnf clean all

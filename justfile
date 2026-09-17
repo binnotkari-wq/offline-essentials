@@ -1,4 +1,4 @@
-# justfile — offline-essentials
+# justfile - offline-essentials
 #
 # Orchestration du kit de survie Linux offline.
 # Chaque recette appelle un script existant sans dupliquer sa logique ;
@@ -14,7 +14,7 @@ default:
 
 # Synchronise le kit de ressources (docs, e-books, repos perso, LLM, ZIM, man)
 sync:
-    ./ressources/sync.sh
+    ./ressources/sync.shà
 
 # Installe une liste de flatpaks sur la machine courante, EN LIGNE
 flatpak-online-install:
