@@ -237,6 +237,9 @@
     "id": "org.inkscape.Inkscape"
   },
   {
+    "id": "com.vscodium.codium"
+  },
+  {
     "id": "com.github.Matoking.protontricks",
     "note": "To access Steam libraries on another drives, you need to grant access to them: flatpak override --user --filesystem=/path/to/other/Steam/Library com.github.Matoking.protontricks"
   },
