@@ -11,6 +11,8 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 # Affiche la liste des recettes disponibles
 default:
     @just --list
+    @export JUST_CHOOSER='bash -c "mapfile -t recipes; exec < /dev/tty; select item in \"\${recipes[@]}\"; do echo \"\$item\"; break; done"'
+    @just --choose
 
 # Synchronise le kit de ressources (docs, e-books, repos perso, LLM, ZIM, man)
 sync:

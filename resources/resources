@@ -1,0 +1,59 @@
+# Ressources synchronisées par resources_online-download.sh
+
+declare -A REPOS=(
+  ["tldr-pages"]="https://github.com/tldr-pages/tldr.git"
+  ["pure-bash-bible"]="https://github.com/dylanaraps/pure-bash-bible.git"
+  ["pure-sh-bible"]="https://github.com/dylanaraps/pure-sh-bible.git"
+  ["just-docs"]="https://github.com/casey/just.git"
+  ["podman-docs"]="https://github.com/containers/podman.git"
+  ["buildah-docs"]="https://github.com/containers/buildah.git"
+  ["bootc-docs"]="https://github.com/containers/bootc.git"
+  ["flatpak-docs"]="https://github.com/flatpak/flatpak-docs.git"
+  ["wine-docs"]="https://gitlab.winehq.org/wine/wine.git"
+  ["btrfs-docs"]="https://github.com/kdave/btrfs-devel.git"
+  ["cryptsetup-docs"]="https://gitlab.com/CRYPTSETUP/cryptsetup.git"
+  ["progit2-book"]="https://github.com/progit/progit2.git"
+  ["gnome-user-docs"]="https://gitlab.gnome.org/GNOME/gnome-user-docs.git"
+  ["nixpkgs-manual"]="https://github.com/NixOS/nixpkgs.git"
+  ["nixos-manual"]="https://github.com/NixOS/nixpkgs.git"
+  ["ostree-docs"]="https://github.com/ostreedev/ostree.git"
+)
+
+declare -A EBOOKS=(
+  ["The_Linux_Command_Line_19.01.pdf"]="https://sourceforge.net/projects/linuxcommand/files/TLCL/19.01/TLCL-19.01.pdf/download"
+  ["The_Linux_Command_Line_25.12A.pdf"]="https://sourceforge.net/projects/linuxcommand/files/TLCL/25.12/TLCL-25.12A.pdf/download"
+  ["Linux_Fundamentals_Cobbaut.pdf"]="https://linux-training.be/linuxtraining_20211003.pdf"
+  ["Linux Fundamentals.pdf"]="http://linux-training.be/linuxfun.pdf"
+  ["System Administration.pdf"]="http://linux-training.be/linuxsys.pdf"
+  ["Linux Servers.pdf"]="http://linux-training.be/linuxsrv.pdf"
+  ["Linux Storage.pdf"]="http://linux-training.be/linuxsto.pdf"
+  ["Linux Security.pdf"]="http://linux-training.be/linuxsec.pdf"
+  ["Linux Networking.pdf"]="http://linux-training.be/linuxnet.pdf"
+  ["Pro_Git_FR.pdf"]="https://github.com/progit/progit2-fr/releases/download/2.1.78/progit.pdf"
+  ["Linux_Kernel_In_A_Nutshell.tar.gz"]="http://files.kroah.com/lkn/lkn_pdf.tar.gz"
+  ["Advanced_Bash_Scripting_Guide.pdf"]="https://tldp.org/LDP/abs/abs-guide.pdf"
+  ["debian-handbook.epub"]="http://debian-handbook.info/download/fr-FR/stable/debian-handbook.epub"
+)
+
+declare -A PUBLIC_REPOS=(
+  ["mini-projects"]="https://github.com/binnotkari-wq/mini-projects.git"
+  ["nixos-dotfiles"]="https://github.com/binnotkari-wq/nixos-dotfiles.git"
+  ["post-install"]="https://github.com/binnotkari-wq/post-install.git"
+  ["scripts"]="https://github.com/binnotkari-wq/scripts.git"
+  ["silverblue_bootc"]="https://github.com/binnotkari-wq/silverblue_bootc.git"
+  ["offline-essentials"]="https://github.com/binnotkari-wq/offline-essentials.git"
+)
+
+declare -A LLMS=(
+  ["Qwen3.5-4B-Q4_K_M.gguf"]="https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/main/Qwen3.5-4B-Q4_K_M.gguf"
+)
+
+declare -A ZIMS=(
+  ["archlinux_en_all_maxi_2026-07.zim"]="https://mirror.download.kiwix.org/zim/other/archlinux_en_all_maxi_2026-07.zim"
+  ["devdocs_en_man_2026-07.zim"]="https://mirror.download.kiwix.org/zim/devdocs/devdocs_en_man_2026-07.zim"
+  ["kris-occhipinti_en_all_2026-07.zim"]="https://mirror.download.kiwix.org/zim/videos/kris-occhipinti_en_all_2026-07.zim"
+  ["gentoo_en_all_maxi_2026-07.zim"]="https://mirror.download.kiwix.org/zim/other/gentoo_en_all_maxi_2026-07.zim"
+  ["alpinelinux_en_all_maxi_2026-07.zim"]="https://mirror.download.kiwix.org/zim/other/alpinelinux_en_all_maxi_2026-07.zim"
+)
+
+MAN_PAGES=(bash podman buildah bootc flatpak wine btrfs cryptsetup git just)
