@@ -1,0 +1,455 @@
+'\" t
+.\"     Title: mdcat
+.\"    Author: Sebastian Wiesner
+.\" Generator: Asciidoctor 2.0.20
+.\"    Manual: mdcat
+.\"    Source: mdcat 2.1.1
+.\"  Language: English
+.\"
+.TH "MDCAT" "1" "" "mdcat 2.1.1" "mdcat"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+mdcat \- render CommonMark Markdown to text terminals
+.SH "SYNOPSIS"
+.sp
+\fBmdcat\fP [\fIOPTIONS\fP] [FILE]...
+.sp
+\fBmdless\fP [\fIOPTIONS\fP] [FILE]...
+.SH "DESCRIPTION"
+.sp
+mdcat renders Markdown \f(CRFILE\fPs in CommonMark dialect to text terminals with sophisticated formatting.
+If no \f(CRFILE\fP is given, or if \f(CRFILE\fP is \*(Aq\-\*(Aq, it reads from standard input.
+.sp
+If invoked as \f(CRmdless\fP automatically use a pager to display the output, see below.
+.SS "CommonMark and terminal support"
+.sp
+mdcat supports all basic CommonMark syntax plus a few extensions, highlights syntax in code blocks, and shows inline links and even inline images in some terminal programs.
+In iTerm2 it also adds jump marks for section headings.
+.sp
+See section Terminal support below for a list of supported terminal programs and their features.
+.SS "Terminal detection"
+.sp
+To enable formatting extensions such as inline images, \f(CRmdcat\fP needs to detect the terminal program, by checking the following environment variables in the given order:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+\f(CR$TERM\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+\f(CR$TERM_PROGRAM\fP
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 3." 4.2
+.\}
+\f(CR$TERMINOLOGY\fP
+.RE
+.sp
+For some terminals \f(CRmdcat\fP also checks \f(CR$TERM_PROGRAM_VERSION\fP to determine whether the terminal supports the expected feature set.
+.sp
+See section ENVIRONMENT below for a detailed description of each environment variable.
+.SS "Pagination"
+.sp
+mdcat can render output in a pager; this is the default when run as \f(CRmdless\fP.
+The environment variables \f(CR$MDCAT_PAGER\fP and \f(CR$PAGER\fP control the pager used.
+.sp
+Note that common pagers do not support proprietary terminal codes for e.g. image support, so mdcat falls back to pure ANSI formatting when pagination is enabled.
+In particular this disables all image support which relies on proprietary escape codes.
+.SS "Image support"
+.sp
+In iTerm2, kitty, Terminology, WezTerm, and VSCode (1.80 or newer) mdcat prints inline images.
+mdcat supports most standard pixel formats by default.
+.sp
+mdcat silently ignores images larger than 100 MiB, under the assumption that images of that size cannot reasonably be rendered in a terminal.
+.SS "SVG support"
+.sp
+In Terminology mdcat also renders SVG images, using the built\-in support of Terminology.
+.sp
+In iTerm2, kitty, VSCode, and WezTerm mdcat renders SVG images into pixel graphics using the \c
+.URL "https://github.com/RazrFalcon/resvg" "resvg" ""
+library.
+Currently this library only supports SVG 1, and only the static subset thereof; see \c
+.URL "https://github.com/RazrFalcon/resvg#svg\-support" "SVG support" ""
+for details.
+While this is sufficient for most simple SVG images, complex SVG images may fail to render or render incompletely.
+.sp
+For local SVG files mdcat relies on the file extension to identify SVG images.
+For remote images from HTTP(S) URLs mdcat inspects the \f(CRContent\-Type\fP header to identify SVG images.
+.SS "HTTP/HTTPS support"
+.sp
+mdcat fetches images from HTTP(S) URLs for rendering if the underlying terminal supports image rendering;
+pass \f(CR\-\-local\fP to disable this and force mdcat to only use images from the local filesystem.
+In this case remote images render as hyperlinks.
+.sp
+Note that some terminals (e.g. Terminology) directly render images from URLs and do not require that mdcat fetches the image data first.
+In this case \f(CR\-\-local\fP has no effect: mdcat always passes the URL to the terminal, and leaves it up to the terminal to fetch it.
+.SH "OPTIONS"
+.sp
+\-p, \-\-paginate
+.RS 4
+Paginate the output of mdcat with a pager like less.
+.sp
+\fBNote:\fP When paginating mdcat only uses standard ANSI formatting and hyperlinks, but no images or other proprietary format codes, because pager programs normally do not support any of these.
+.sp
+This is the default when run as \f(CRmdless\fP.
+.RE
+.sp
+\-P, \-\-no\-pager
+.RS 4
+Do not paginate output.
+.sp
+This is the default when run as \f(CRmdcat\fP.
+.RE
+.sp
+\-c, \-\-no\-colour
+.RS 4
+Disable all colours and other styles.
+.RE
+.sp
+\-\-ansi
+.RS 4
+Skip terminal detection and only use ANSI formatting.
+.RE
+.sp
+\-\-columns
+.RS 4
+Maximum number of columns to use for text output.
+Defaults to the size of the underlying terminal.
+.RE
+.sp
+\-l, \-\-local
+.RS 4
+Do not access remote resources.
+.RE
+.sp
+\-\-fail
+.RS 4
+Fail immediately at the first FILE which fails to read.
+By default, mdcat continues with the next file.
+.RE
+.sp
+\-\-detect\-terminal
+.RS 4
+Detect the terminal program, print its name, and exit.
+.RE
+.sp
+\-h, \-\-help
+.RS 4
+Show a help message to the user and exit.
+.RE
+.sp
+\-V, \-\-version
+.RS 4
+Show the version of mdcat and exit.
+The long flag also includes information about the builtin features.
+.RE
+.SH "EXIT STATUS"
+.sp
+mdcat exits with 0 if no error occurred, or 1 otherwise.
+.sp
+If run as \f(CRmdless\fP or if \f(CR\-\-paginate\fP is given and the pager fails to start mdcat exists with 128.
+.SH "ENVIRONMENT"
+.sp
+TERM
+.RS 4
+    \f(CRmdcat\fP first checks this variable to identify the terminal program (see section Terminal detection).
+It understands the following values.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRwezterm\fP: WezTerm.  Note that WezTerm sets \f(CR$TERM\fP to \f(CRxterm\-256color\fP by default, and only uses \f(CRwezterm\fP for \f(CR$TERM\fP if explicitly configured to do so.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRxterm\-kitty\fP: kitty
+.RE
+.sp
+For all other values \f(CRmdcat\fP proceeds to check \f(CR$TERM_PROGRAM\fP.
+.RE
+.sp
+TERM_PROGRAM
+.RS 4
+If \f(CR$TERM\fP does not conclusively identify the terminal program \f(CRmdcat\fP checks this variable next. It understands the following values:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRiTerm.app\fP: iTerm2
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRWezTerm\fP: WezTerm
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\f(CRvscode\fP: VSCode integrated terminal, but only if \f(CR$TERM_PROGRAM_VERSION\fP indicates a sufficient version to support all required features..
+.RE
+.sp
+For all other values \f(CRmdcat\fP proceeds to check \f(CR$TERMINOLOGY\fP.
+.RE
+.sp
+TERM_PROGRAM_VERSION
+.RS 4
+If \f(CR$TERM_PROGRAM\fP is \f(CRvscode\fP, \f(CRmdcat\fP checks this variable to determine whether VSCode has a sufficient version to support all required features.
+.RE
+.sp
+TERMINOLOGY
+.RS 4
+If this variable is \f(CR1\fP, mdcat assumes that the terminal is Terminology.
+.sp
+Otherwise \f(CRmdcat\fP ends terminal detection and assumes that the terminal is only capable of standard ANSI formatting.
+.RE
+.sp
+COLUMNS
+.RS 4
+The number of character columns on screen.
+.sp
+mdcat only uses this variable if it fails to query the size from the underlying terminal.
+.RE
+.sp
+ROWS
+.RS 4
+The number of character rows on screen.
+.sp
+mdcat only uses this variable if it fails to query the size from the underlying terminal.
+.RE
+.sp
+MDCAT_PAGER
+.RS 4
+The pager program to use for \f(CRmdless\fP or if \f(CR\-\-paginate\fP is given.
+.sp
+The pager program must support basic ANSI formatting sequences, like e.g. \f(CRless \-r\fP.
+.sp
+The value of this variable is subject to shell\-like word\-splitting.
+It is \fBnot\fP subject to any kind of expansion or substitution (e.g. parameter expansion, process substitution, etc.).
+.sp
+If set to an empty value, mdcat completely disables pagination.
+.RE
+.sp
+PAGER
+.RS 4
+The pager program to use if \f(CR$MDCAT_PAGER\fP is unset.
+.sp
+Subject to the same rules as \f(CR$MDCAT_PAGER\fP.
+.sp
+If both \f(CR$PAGER\fP and \f(CR$MDCAT_PAGER\fP are unset use \f(CRless \-r\fP as pager.
+.RE
+.sp
+http_proxy, https_proxy, HTTPS_PROXY, all_proxy, ALL_PROXY
+.RS 4
+Proxies for HTTP, HTTPS, or both protocols, to use when fetching images.
+.sp
+Each variable provides the proxy for the corresponding protocol as URL, e.g. \f(CR\c
+.URL "http://proxy.example.com:3128" "" "\fP."
+.sp
+The lowercase name takes precedence; note that \f(CR$http_proxy\fP deliberately has no uppercase variant.
+.RE
+.sp
+no_proxy, NO_PROXY
+.RS 4
+A comma\-separated list of host/domain names or IP address not to use a proxy for.
+.sp
+Matches partial hostnames (e.g. \f(CRexample.org\fP also disables proxy for \f(CRwww.example.org\fP), but always at name boundaries.
+.RE
+.sp
+MDCAT_LOG
+.RS 4
+Directives to configure output of tracing information.
+.sp
+See \c
+.URL "https://docs.rs/tracing\-subscriber/latest/tracing_subscriber/struct.EnvFilter.html#directives" "" ""
+for syntax details; use \f(CRMDCAT_LOG=trace\fP for complete debugging information, and \f(CRMDCAT_LOG=mdcat::render=trace\fP to trace rendering only.
+.RE
+.SH "CONFORMING TO"
+.SS "CommonMark support and extensions"
+.sp
+mdcat supports version 0.30 of the \c
+.URL "https://spec.commonmark.org/" "CommonMark Spec" ","
+plus
+.URL "https://github.github.com/gfm/#task\-list\-items\-extension\-" "Task lists" ""
+and
+.URL "https://github.github.com/gfm/#strikethrough\-extension\-" "strikethrough" ","
+through
+.URL "https://github.com/raphlinus/pulldown\-cmark" "pulldown\-cmark" "."
+.sp
+mdcat does \fBnot\fP yet support footnotes and \c
+.URL "https://github.github.com/gfm/#tables\-extension\-" "tables" "."
+mdcat parses HTML blocks and inline tags but does not apply special rendering; it prints HTML as is.
+.SS "Terminal support"
+.sp
+Unless \f(CR\-\-no\-colour\fP is given, mdcat translates CommonMark text into ANSI formatted text, with standard SGR formatting codes and hyperlinks.
+It uses bold (SGR 1), italic (SGR 3) and strikethrough (SGR 9) formatting, and the standard 4\-bit color sequences, as well as \c
+.URL "https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda" "OSC 8" ""
+for hyperlinks.
+It does not use 8\-bit or 24\-bit color sequences, though this may change in future releases.
+.sp
+Additionally, it uses proprietary escape codes if it detects one of the following terminal emulators (see sections Terminal detection and ENVIRONMENT for details):
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+.URL "https://iterm2.com/" "iTerm2" ":"
+Inline images (
+.URL "https://iterm2.com/documentation\-images.html" "iTerm2 protocol" ")"
+and
+.URL "https://iterm2.com/documentation\-escape\-codes.html" "Marks" "."
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+.URL "https://github.com/kovidgoyal/kitty" "kitty" ":"
+Inline images (
+.URL "https://sw.kovidgoyal.net/kitty/graphics\-protocol.html" "kitty Graphics protocol" ")."
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+.URL "http://terminolo.gy" "Terminology" ":"
+Inline images (terminology protocol).
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+.URL "https://wezfurlong.org/wezterm/" "WezTerm" ":"
+Inline images (kitty graphics protocol, see above).
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+.URL "https://code.visualstudio.com/" "VSCode" ""
+1.80 or newer, integrated terminal: Inline images (iTerm2 protocol, see above)
+.RE
+.SH "BUGS"
+.sp
+Please report bugs to \c
+.URL "https://github.com/swsnr/mdcat/issues" "" "."
+.sp
+Currently does not provide means to customize styles and colours.
+.SH "EXAMPLES"
+.sp
+mdcat hello \- world
+.RS 4
+Render markdown in \f(CRhello\fP, then from standard input, then from \f(CRworld\fP.
+.RE
+.sp
+mdless hello
+.RS 4
+Render markdown from \f(CRmdless\fP through a pager.
+.RE
+.SH "SEE ALSO"
+.sp
+\fBcat(1)\fP, \fBbat(1)\fP
+.SH "COPYRIGHT"
+.sp
+Copyright Sebastian Wiesner \c
+.MTO "sebastian\(atswsnr.de" "" ""
+and contributors
+.sp
+Binaries are subject to the terms of the Mozilla Public License, v. 2.0.
+See \c
+.URL "https://github.com/swsnr/mdcat/blob/main/LICENSE" "" "."
+.sp
+Most of the source is subject to the terms of the Mozilla Public License, v. 2.0, unless otherwise noted;
+some files are subject to the terms of the Apache 2.0 license, see \c
+.URL "http://www.apache.org/licenses/LICENSE\-2.0" "" "."
+.SH "AUTHOR"
+.sp
+Sebastian Wiesner
