@@ -1,84 +1,48 @@
 #!/usr/bin/env bash
-#
-# flatpak_offline-install.sh
-#
-# Installe (ou met à jour) les flatpaks listés dans le JSON en utilisant
-# le dépôt OSTree local (REPO_DIR/.ostree/repo, généré par
-# flatpak_local-archive.sh via `flatpak create-usb`) comme source de sideload.
-# Fonctionne entièrement hors-ligne une fois REPO_DIR copié sur la machine
-# cible, à condition que le remote d'origine (ex: flathub) y soit déjà
-# configuré AVEC le même collection-id que sur la machine source.
-#
-# Idempotent : le collection-id n'est reconfiguré que s'il diffère, et
-# flatpak lui-même ne réinstalle pas une app déjà à jour.
-
+# Installe/actualise les flatpaks listés dans "flatpaks" à partir du dépôt
+# OSTree sideload (REPO_DIR/.ostree/repo, généré par flatpak_local-archive.sh
+# et copié sur cette machine). Le remote d'origine doit y être configuré
+# avec le même collection-id que sur la machine source.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-JSON_FILE="${JSON_FILE:-${SCRIPT_DIR}/flatpaks.json}"
-REPO_DIR="${REPO_DIR:-${SCRIPT_DIR}/flatpak-repo}"
+LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpaks}"
+REPO_DIR="${REPO_DIR:-${SCRIPT_DIR}}"
 SIDELOAD_REPO="${REPO_DIR}/.ostree/repo"
-DEFAULT_REMOTE="${DEFAULT_REMOTE:-flathub}"
-DEFAULT_BRANCH="${DEFAULT_BRANCH:-stable}"
-FLATHUB_URL="${FLATHUB_URL:-https://dl.flathub.org/repo/flathub.flatpakrepo}"
-FLATHUB_COLLECTION_ID="${FLATHUB_COLLECTION_ID:-org.flathub.Stable}"
+REMOTE="${REMOTE:-flathub}"
+FLATHUB_URL="https://dl.flathub.org/repo/flathub.flatpakrepo"
+COLLECTION_ID="${COLLECTION_ID:-org.flathub.Stable}"
 
-log()  { printf '[offline-install] %s\n' "$*"; }
-die()  { printf '[offline-install] ERREUR: %s\n' "$*" >&2; exit 1; }
+log() { printf '[offline-deploy] %s\n' "$*"; }
 
-command -v flatpak >/dev/null 2>&1 || die "flatpak n'est pas installé."
-command -v jq      >/dev/null 2>&1 || die "jq n'est pas installé."
-[[ -d "${SIDELOAD_REPO}" ]] || die "Dépôt OSTree introuvable : ${SIDELOAD_REPO} (copiez le dossier ${REPO_DIR} généré par flatpak_local-archive.sh)."
-[[ -f "${JSON_FILE}" ]] || die "Fichier JSON introuvable : ${JSON_FILE}"
+main() {
+	command -v flatpak >/dev/null 2>&1 || { echo "flatpak absent." >&2; exit 1; }
+	[[ -d "${SIDELOAD_REPO}" ]] || { echo "Dépôt introuvable : ${SIDELOAD_REPO}" >&2; exit 1; }
+	[[ -f "${LIST_FILE}" ]] || { echo "Fichier introuvable : ${LIST_FILE}" >&2; exit 1; }
 
-# --- Remote d'origine + collection-id (nécessaire même hors-ligne, pour --
-# --- que flatpak sache faire correspondre le contenu du dépôt sideloadé ----
-if ! flatpak remote-list | awk '{print $1}' | grep -qx "${DEFAULT_REMOTE}"; then
-    log "Ajout du remote '${DEFAULT_REMOTE}' (métadonnées seules, pas de contact réseau nécessaire au install --sideload-repo)..."
-    flatpak remote-add --if-not-exists "${DEFAULT_REMOTE}" "${FLATHUB_URL}" || \
-        die "Impossible d'ajouter le remote '${DEFAULT_REMOTE}'. Ajoutez-le manuellement avant de relancer ce script."
-else
-    log "Remote '${DEFAULT_REMOTE}' déjà présent."
-fi
+	log "début"
 
-current_cid="$(flatpak remotes -d | awk -v r="${DEFAULT_REMOTE}" '$1==r{print $NF}')"
-if [[ "${current_cid}" != "${FLATHUB_COLLECTION_ID}" ]]; then
-    log "Configuration du collection-id '${FLATHUB_COLLECTION_ID}' sur '${DEFAULT_REMOTE}' (requis pour le sideload)..."
-    flatpak remote-modify --collection-id="${FLATHUB_COLLECTION_ID}" "${DEFAULT_REMOTE}"
-else
-    log "Collection-id déjà configuré sur '${DEFAULT_REMOTE}'."
-fi
+	flatpak remote-list | awk '{print $1}' | grep -qx "${REMOTE}" ||
+		flatpak remote-add --if-not-exists "${REMOTE}" "${FLATHUB_URL}"
 
-# --- Installation de chaque app listée dans le JSON, via sideload ----------
-count_total=0
-count_installed=0
-count_failed=0
+	local current_cid
+	current_cid="$(flatpak remotes -d | awk -v r="${REMOTE}" '$1==r{print $NF}')"
+	[[ "${current_cid}" == "${COLLECTION_ID}" ]] ||
+		flatpak remote-modify --collection-id="${COLLECTION_ID}" "${REMOTE}"
 
-while IFS= read -r entry; do
-    count_total=$((count_total + 1))
+	local count=0
+	while IFS= read -r app_id; do
+		app_id="${app_id%%#*}"
+		app_id="$(echo "${app_id}" | xargs)"
+		[[ -z "${app_id}" ]] && continue
 
-    app_id=$(jq -r '.id' <<<"${entry}")
-    remote=$(jq -r '.remote // empty' <<<"${entry}")
-    branch=$(jq -r '.branch // empty' <<<"${entry}")
-    remote="${remote:-${DEFAULT_REMOTE}}"
-    branch="${branch:-${DEFAULT_BRANCH}}"
+		log "installation/mise à jour : ${app_id}"
+		flatpak install --noninteractive -y --or-update \
+			--sideload-repo="${SIDELOAD_REPO}" "${REMOTE}" "${app_id}"
+		count=$((count + 1))
+	done <"${LIST_FILE}"
 
-    if [[ -z "${app_id}" || "${app_id}" == "null" ]]; then
-        log "Entrée ignorée (id manquant) : ${entry}"
-        continue
-    fi
+	log "fin (${count} apps)"
+}
 
-    log "-> ${app_id} : installation/mise à jour depuis le dépôt sideloadé (${SIDELOAD_REPO})..."
-    if flatpak install --noninteractive -y --or-update \
-        --sideload-repo="${SIDELOAD_REPO}" "${remote}" "${app_id}//${branch}"; then
-        log "OK  ${app_id} installé/à jour."
-        count_installed=$((count_installed + 1))
-    else
-        log "ÉCHEC installation de ${app_id}."
-        count_failed=$((count_failed + 1))
-    fi
-done < <(jq -c '.[]' "${JSON_FILE}")
-
-log "Terminé. Total: ${count_total} | Installés/à jour: ${count_installed} | Échecs: ${count_failed}"
-
-[[ "${count_failed}" -eq 0 ]] || exit 1
+main "$@"
