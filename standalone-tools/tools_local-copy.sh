@@ -6,57 +6,51 @@ BIN_DEST="$HOME/.local/bin"
 SHARE_DEST="$HOME/.local/share"
 mkdir -p "$BIN_DEST" "$SHARE_DEST"
 
-link_if_absent() {
-  local target="$1" linkname="$2"
-  if command -v "$linkname" >/dev/null 2>&1; then
-    echo "-- $linkname déjà présent sur le système, ignoré"
-    return
+already_present() {
+  if command -v "$1" >/dev/null 2>&1; then
+    echo "-- $1 déjà présent sur le système, groupe ignoré"
+    return 0
   fi
-  ln -sf "$target" "$BIN_DEST/$linkname"
-  echo "==> $linkname -> $target"
+  return 1
 }
 
-# glow / just / mdcat : binaire unique, dossier conservé pour les fichiers annexes (.md, completions...)
-link_if_absent "$SRC/glow/glow" "glow"
-link_if_absent "$SRC/just/just" "just"
-link_if_absent "$SRC/mdcat/mdcat" "mdcat"
-
-# kiwix-tools : uniquement des exécutables -> copie dans ~/.local/bin
-for bin in "$SRC"/kiwix-tools/*; do
-  name="$(basename "$bin")"
-  if command -v "$name" >/dev/null 2>&1; then
-    echo "-- $name déjà présent sur le système, ignoré"
-    continue
-  fi
-  cp -f "$bin" "$BIN_DEST/$name"
-  echo "==> $name copié"
+# glow / just / mdcat : binaires indépendants, un test chacun
+for name in glow just mdcat; do
+  already_present "$name" && continue
+  cp -rf "$SRC/$name" "$SHARE_DEST/$name"
+  ln -sf "$SHARE_DEST/$name/$name" "$BIN_DEST/$name"
+  echo "==> $name installé"
 done
 
-# distrobox : bin/ contient uniquement des exécutables -> copie dans ~/.local/bin
-#             share/ contient des assets (man, completions...) -> copie dans ~/.local/share
-for bin in "$SRC"/distrobox/bin/*; do
-  name="$(basename "$bin")"
-  if command -v "$name" >/dev/null 2>&1; then
-    echo "-- $name déjà présent sur le système, ignoré"
-    continue
-  fi
-  cp -f "$bin" "$BIN_DEST/$name"
-  echo "==> $name copié"
-done
-cp -rf "$SRC/distrobox/share/." "$SHARE_DEST/"
+# kiwix-tools : groupe, test sur kiwix-serve
+if ! already_present "kiwix-serve"; then
+  cp -rf "$SRC/kiwix-tools" "$SHARE_DEST/kiwix-tools"
+  for bin in "$SHARE_DEST"/kiwix-tools/*; do
+    cp -f "$bin" "$BIN_DEST/$(basename "$bin")"
+  done
+  echo "==> kiwix-tools installé"
+fi
 
-# llama.cpp : binaires + .so interdépendants -> wrapper shell exportant LD_LIBRARY_PATH
-LLAMA_BINS=("llama-cli" "llama-server" "llama-quantize" "llama-bench")
-for name in "${LLAMA_BINS[@]}"; do
-  if command -v "$name" >/dev/null 2>&1; then
-    echo "-- $name déjà présent sur le système, ignoré"
-    continue
-  fi
-  cat > "$BIN_DEST/$name" <<EOF
+# distrobox : groupe, test sur distrobox
+if ! already_present "distrobox"; then
+  cp -rf "$SRC/distrobox" "$SHARE_DEST/distrobox"
+  for bin in "$SHARE_DEST"/distrobox/bin/*; do
+    cp -f "$bin" "$BIN_DEST/$(basename "$bin")"
+  done
+  cp -rf "$SHARE_DEST/distrobox/share/." "$SHARE_DEST/"
+  echo "==> distrobox installé"
+fi
+
+# llama.cpp : groupe, test sur llama-server
+if ! already_present "llama-server"; then
+  cp -rf "$SRC/llama.cpp" "$SHARE_DEST/llama.cpp"
+  for name in llama-cli llama-server llama-quantize llama-bench; do
+    cat > "$BIN_DEST/$name" <<EOF
 #!/usr/bin/env bash
-export LD_LIBRARY_PATH="$SRC/llama.cpp:\${LD_LIBRARY_PATH:-}"
-exec "$SRC/llama.cpp/$name" "\$@"
+export LD_LIBRARY_PATH="$SHARE_DEST/llama.cpp:\${LD_LIBRARY_PATH:-}"
+exec "$SHARE_DEST/llama.cpp/$name" "\$@"
 EOF
-  chmod +x "$BIN_DEST/$name"
-  echo "==> wrapper $name créé"
-done
+    chmod +x "$BIN_DEST/$name"
+  done
+  echo "==> llama.cpp installé"
+fi
