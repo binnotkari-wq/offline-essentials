@@ -4,7 +4,7 @@ set -euo pipefail
 export PATH="/usr/bin:/bin:/usr/local/bin:${PATH}"
 
 DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-source "${DIR}/resources"
+source "${DIR}/resources.list"
 
 DOCS_DIR="${DIR}/github_docs"
 EBOOKS_DIR="${DIR}/ebooks"

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-FORMULAS_FILE="$REPO_DIR/formulas.txt"
+FORMULAS_FILE="$REPO_DIR/brew.list"
 
 # 1. Installer brew (si pas déjà présent)
 if ! command -v brew >/dev/null 2>&1 && [[ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then

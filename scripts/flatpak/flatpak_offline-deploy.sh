@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Installe/actualise les flatpaks listés dans "flatpaks" à partir du dépôt
+# Installe/actualise les flatpaks listés dans "flatpaks.list" à partir du dépôt
 # OSTree sideload (REPO_DIR/.ostree/repo, généré par flatpak_local-archive.sh
 # et copié sur cette machine). Le remote d'origine doit y être configuré
 # avec le même collection-id que sur la machine source.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpaks}"
+LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpaks.list}"
 REPO_DIR="${REPO_DIR:-${SCRIPT_DIR}}"
 SIDELOAD_REPO="${REPO_DIR}/.ostree/repo"
 REMOTE="${REMOTE:-flathub}"

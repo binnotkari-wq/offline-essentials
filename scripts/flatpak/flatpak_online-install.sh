@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Installe les flatpaks listés dans le fichier "flatpaks" (un id par ligne).
+# Installe les flatpaks listés dans le fichier "flatpaks.list".
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpaks}"
+LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpaks.list}"
 REMOTE="${REMOTE:-flathub}"
 FLATHUB_URL="https://dl.flathub.org/repo/flathub.flatpakrepo"
 
