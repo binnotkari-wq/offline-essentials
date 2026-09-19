@@ -3,7 +3,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpaks.list}"
+LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpak.list}"
 REMOTE="${REMOTE:-flathub}"
 FLATHUB_URL="https://dl.flathub.org/repo/flathub.flatpakrepo"
 

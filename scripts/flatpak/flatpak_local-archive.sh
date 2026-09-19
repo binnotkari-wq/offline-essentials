@@ -33,7 +33,7 @@ main() {
 	done <"${LIST_FILE}"
 
 	[[ ${#refs[@]} -gt 0 ]] || { echo "Aucune application à archiver." >&2; exit 1; }
-	flatpak create-usb "${REPO_DIR}" "${refs[@]}"
+	flatpak create-usb --allow-partial "${REPO_DIR}" "${refs[@]}"
 	log "fin : dépôt prêt dans ${REPO_DIR}/.ostree/repo (${#refs[@]} apps)"
 }
 

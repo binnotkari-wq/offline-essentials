@@ -10,7 +10,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/../../" && pwd)"
 ARCHIVES=(
   "${ROOT_DIR}/dataset"
-  "${ROOT_DIR}/scriptso"
+  "${ROOT_DIR}/scripts"
   "${ROOT_DIR}/justfile"
   "${ROOT_DIR}/README.md"
 )
@@ -34,8 +34,22 @@ mksquashfs "${ARCHIVES[@]}" "${OUTPUT_FILE}" \
     -comp zstd -Xcompression-level 3 \
     -noappend
 
-sha256sum "${OUTPUT_FILE}" > "${OUTPUT_FILE}.sha256"
+cd ../../squashfs-image
+sha256sum "offline-essentials.sqfs" > "offline-essentials.sqfs.sha256"
 
 SIZE_HUMAN="$(du -h "${OUTPUT_FILE}" | cut -f1)"
 log "OK  Archive créée : ${OUTPUT_FILE} (${SIZE_HUMAN})"
 log "OK  Somme de contrôle : ${OUTPUT_FILE}.sha256"
+
+cat > "${OUTPUT_DIR}/image_initial-mount.sh" << EOF
+#!/usr/bin/env bash
+set -euo pipefail
+sudo systemctl daemon-reload
+sha256sum -c "offline-essentials.sqfs.sha256"
+sudo mkdir -p "/mnt/offline-essentials"
+sudo mount -o loop,ro "offline-essentials.sqfs" "/mnt/offline-essentials"
+xdg-open /mnt/offline-essentials
+EOF
+
+chmod +x "${OUTPUT_DIR}/image_initial-mount.sh"
+log "OK  Script de montage initial squashfs créé dans $OUTPUT_DIR"
