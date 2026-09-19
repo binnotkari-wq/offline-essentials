@@ -3,15 +3,16 @@
 set -euo pipefail
 export PATH="/usr/bin:/bin:/usr/local/bin:${PATH}"
 
+DATA_DIR="$(cd "$(dirname "$0")/../../dataset/resources" && pwd)"
 DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 source "${DIR}/resources.list"
 
-DOCS_DIR="${DIR}/github_docs"
-EBOOKS_DIR="${DIR}/ebooks"
-REPOS_DIR="${DIR}/git"
-LLMS_DIR="${DIR}/llm"
-ZIMS_DIR="${DIR}/zims"
-MAN_DIR="${DIR}/man"
+DOCS_DIR="${DATA_DIR}/github_docs"
+EBOOKS_DIR="${DATA_DIR}/ebooks"
+REPOS_DIR="${DATA_DIR}/git"
+LLMS_DIR="${DATA_DIR}/llm"
+ZIMS_DIR="${DATA_DIR}/zims"
+MAN_DIR="${DATA_DIR}/man"
 mkdir -p "${DOCS_DIR}" "${EBOOKS_DIR}" "${REPOS_DIR}" "${LLMS_DIR}" "${ZIMS_DIR}" "${MAN_DIR}"
 
 FAILED=()

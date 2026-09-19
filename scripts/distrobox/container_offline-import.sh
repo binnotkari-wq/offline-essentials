@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INPUT_FILE="${SCRIPT_DIR}/toolbox.tar"
+DATA_DIR="$(cd "$(dirname "$0")/../../dataset/distrobox" && pwd)"
+INPUT_FILE="${DATA_DIR}/toolbox.tar"
 
 podman load -i "$INPUT_FILE"
 

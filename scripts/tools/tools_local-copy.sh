@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC="$(cd "$(dirname "$0")/../../dataset/tools" && pwd)"
 BIN_DEST="$HOME/.local/bin"
 SHARE_DEST="$HOME/.local/share"
 mkdir -p "$BIN_DEST" "$SHARE_DEST"
