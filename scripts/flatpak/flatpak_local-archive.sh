@@ -5,8 +5,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpaks.list}"
-REPO_DIR="${REPO_DIR:-${SCRIPT_DIR}}"
+LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpak.list}"
+REPO_DIR="$(cd "$(dirname "$0")/../../dataset/flatpak" && pwd)"
 REMOTE="${REMOTE:-flathub}"
 COLLECTION_ID="${COLLECTION_ID:-org.flathub.Stable}"
 

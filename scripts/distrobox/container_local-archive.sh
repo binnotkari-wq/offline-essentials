@@ -4,10 +4,12 @@ set -euo pipefail
 # Prérequis : distrobox_create.sh doit avoir été exécuté avant ce script,
 # la distrobox doit déjà exister pour qu'on puisse y entrer et l'initialiser.
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_FILE="${SCRIPT_DIR}/toolbox.tar"
+DATA_DIR="$(cd "$(dirname "$0")/../../dataset/distrobox" && pwd)"
+OUTPUT_FILE="${DATA_DIR}/toolbox.tar"
 CONTAINER_NAME="toolbox"
 IMAGE_NAME="toolbox:latest"
+
+mkdir -p "$DATA_DIR"
 
 # Déclenche distrobox-init une première (et unique) fois, pendant qu'on est
 # encore en ligne : cela pose un marqueur dans le conteneur qui lui évitera

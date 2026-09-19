@@ -7,8 +7,9 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-IMAGE_FILE="${1:-${SCRIPT_DIR}/offline-essentials.sqfs}"
+IMAGE_DIR="$(cd "$(dirname "$0")/../../squashfs-image" && pwd)"
+IMAGE_FILE="${IMAGE_DIR}/offline-essentials.sqfs"
+
 MOUNT_POINT="${2:-/mnt/offline-essentials}"
 
 log()  { printf '[mount] %s\n' "$*"; }
@@ -24,3 +25,4 @@ sudo mkdir -p "${MOUNT_POINT}"
 sudo mount -o loop,ro "${IMAGE_FILE}" "${MOUNT_POINT}"
 
 log "OK  Monté : ${IMAGE_FILE} -> ${MOUNT_POINT}"
+xdg-open /mnt/offline-essentials

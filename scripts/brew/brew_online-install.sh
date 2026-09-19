@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-FORMULAS_FILE="$REPO_DIR/brew.list"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+FORMULAS_FILE="$SCRIPT_DIR/brew.list"
 
 # 1. Installer brew (si pas déjà présent)
 if ! command -v brew >/dev/null 2>&1 && [[ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
@@ -13,7 +13,7 @@ fi
 
 # Ajout du path dans .bashrc, une seule fois
 if ! grep -q 'linuxbrew/.linuxbrew/bin/brew shellenv' ~/.bashrc 2>/dev/null; then
-    cp -f "~/.bashrc" "~/.bashrc.backup"
+    cp -f "$HOME/.bashrc" "$HOME/.bashrc.backup"
     echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
     export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEST="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEST="$(cd "$(dirname "$0")/../../dataset/tools" && pwd)"
 mkdir -p "$DEST"
 
 # URLs figées manuellement — dernières versions repérées au 18/09/2026

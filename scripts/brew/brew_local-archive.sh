@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-SNAPSHOT="$REPO_DIR/linuxbrew-snapshot.tar.gz"
+DATA_DIR="$(cd "$(dirname "$0")/../../dataset/brew" && pwd)"
+SNAPSHOT="$DATA_DIR/linuxbrew-snapshot.tar.gz"
+
+mkdir -p "$DATA_DIR"
 
 # Archiver tout le prefix
 echo "Archivage de /home/linuxbrew..."
