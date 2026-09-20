@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
+
 # Construit/actualise un dépôt OSTree sideload (offline) à partir de la
 # liste "flatpaks.list". S'exécute sur une machine où flatpak_online-install.sh
 # a déjà tourné (remote configuré, apps déjà installées).
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
