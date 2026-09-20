@@ -176,9 +176,9 @@ local_archive:
 
 # Déploie l'intégralité du kit depuis l'archive squashfs. Opération idempotente. Aucune connection réseau nécessaire.
 offline_deploy:
-    just confirm resources-deploy
-    just confirm flatpak-offline-deploy
-    just confirm brew-offline-deploy
-    just confirm container-offline-import distrobox-create
-    just confirm tools-local-copy
+    just _confirm tools-local-copy
+    just _confirm container-offline-import distrobox-create
+    just _confirm brew-offline-deploy
+    just _confirm flatpak-offline-deploy
+    just _confirm resources-deploy
     @echo "Déploiement terminé."

@@ -15,6 +15,9 @@ main() {
 
 	log "début"
 
+	# On supprime les flatpaks du repo fedora au préalable.
+	flatpak uninstall -y $(flatpak list --columns=application,origin | grep -i 'fedora' | awk '{print $1}') 2>/dev/null || true
+
 	flatpak remote-list | awk '{print $1}' | grep -qx "${REMOTE}" ||
 		flatpak remote-add --if-not-exists "${REMOTE}" "${FLATHUB_URL}"
 

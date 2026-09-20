@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpak.list}"
 REPO_DIR="$(cd "$(dirname "$0")/../../dataset/flatpak" && pwd)"
 SIDELOAD_REPO="${REPO_DIR}/.ostree/repo"
+FLATHUB_REPOFILE="${REPO_DIR}/flathub.flatpakrepo"
 REMOTE="${REMOTE:-flathub}"
-FLATHUB_URL="https://dl.flathub.org/repo/flathub.flatpakrepo"
 COLLECTION_ID="${COLLECTION_ID:-org.flathub.Stable}"
 
 log() { printf '[offline-deploy] %s\n' "$*"; }
@@ -19,11 +19,15 @@ main() {
 	command -v flatpak >/dev/null 2>&1 || { echo "flatpak absent." >&2; exit 1; }
 	[[ -d "${SIDELOAD_REPO}" ]] || { echo "Dépôt introuvable : ${SIDELOAD_REPO}" >&2; exit 1; }
 	[[ -f "${LIST_FILE}" ]] || { echo "Fichier introuvable : ${LIST_FILE}" >&2; exit 1; }
+	[[ -f "${FLATHUB_REPOFILE}" ]] || { echo "Fichier introuvable : ${FLATHUB_REPOFILE}" >&2; exit 1; }
 
 	log "début"
 
+	# On supprime les flatpaks du repo fedora au préalable.
+	flatpak uninstall -y $(flatpak list --columns=application,origin | grep -i 'fedora' | awk '{print $1}') 2>/dev/null || true
+
 	flatpak remote-list | awk '{print $1}' | grep -qx "${REMOTE}" ||
-		flatpak remote-add --if-not-exists "${REMOTE}" "${FLATHUB_URL}"
+		flatpak remote-add --if-not-exists "${REMOTE}" "${FLATHUB_REPOFILE}"
 
 	local current_cid
 	current_cid="$(flatpak remotes -d | awk -v r="${REMOTE}" '$1==r{print $NF}')"

@@ -9,6 +9,7 @@ LIST_FILE="${LIST_FILE:-${SCRIPT_DIR}/flatpak.list}"
 REPO_DIR="$(cd "$(dirname "$0")/../../dataset/flatpak" && pwd)"
 REMOTE="${REMOTE:-flathub}"
 COLLECTION_ID="${COLLECTION_ID:-org.flathub.Stable}"
+FLATHUB_URL="https://dl.flathub.org/repo/flathub.flatpakrepo"
 
 log() { printf '[local-archive] %s\n' "$*"; }
 
@@ -19,6 +20,9 @@ main() {
 
 	log "début"
 	mkdir -p "${REPO_DIR}"
+
+	log "téléchargement flathub.flatpakrepo"
+	curl -fsSL -o "${REPO_DIR}/flathub.flatpakrepo" "${FLATHUB_URL}"
 
 	local current_cid
 	current_cid="$(flatpak remotes -d | awk -v r="${REMOTE}" '$1==r{print $NF}')"
