@@ -3,7 +3,7 @@ net.lutris.Lutris
 com.heroicgameslauncher.hgl
 com.usebottles.bottles
 com.vscodium.codium
-io.github.ilya_zlobintsev.LACT # si NixOS : préférer une installation native
+io.github.ilya_zlobintsev.LACT
 com.valvesoftware.Steam
 com.valvesoftware.Steam.CompatibilityTool.Proton-GE
 com.valvesoftware.Steam.CompatibilityTool.Boxtron
@@ -60,8 +60,8 @@ page.tesk.Refine
 org.nickvision.tagger
 org.tenacityaudio.Tenacity
 com.github.fabiocolacio.marker
-io.github.qwersyk.Newelle # si NixOS : préférer une installation native
-org.gnome.Extensions # sur NixOS déjà installé nativement, non désinstallable
+io.github.qwersyk.Newelle
+org.gnome.Extensions
 org.gnome.World.PikaBackup
 io.missioncenter.MissionCenter
 com.mattjakeman.ExtensionManager
@@ -78,5 +78,5 @@ io.github.Faugus.faugus-launcher
 org.fedoraproject.MediaWriter
 org.inkscape.Inkscape
 com.vscodium.codium
-com.github.Matoking.protontricks # To access Steam libraries on other drives: flatpak override --user --filesystem=/path/to/other/Steam/Library com.github.Matoking.protontricks
+com.github.Matoking.protontricks
 io.freetubeapp.FreeTube

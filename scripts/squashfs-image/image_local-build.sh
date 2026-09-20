@@ -34,7 +34,7 @@ mksquashfs "${ARCHIVES[@]}" "${OUTPUT_FILE}" \
     -comp zstd -Xcompression-level 3 \
     -noappend
 
-cd ../../squashfs-image
+cd "$OUTPUT_DIR"
 sha256sum "offline-essentials.sqfs" > "offline-essentials.sqfs.sha256"
 
 SIZE_HUMAN="$(du -h "${OUTPUT_FILE}" | cut -f1)"

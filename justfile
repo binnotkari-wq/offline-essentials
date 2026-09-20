@@ -52,12 +52,6 @@ _menu:
         just "$RECIPE"
     fi
 
-
-
-
-
-
-
 # Bilan de l'espace disque occupé par le dataset
 _check-space:
     @echo "=========================================="
@@ -70,10 +64,6 @@ _check-space:
     @du -sh ./dataset
     @echo "-------------------------------------------"
     @bash -c 'shopt -s dotglob nullglob; du -sh ./dataset/*/'
-
-# Liste les refs (applications) présentes dans le dépôt local
-_list_flatpak_repo:
-    @ostree refs --repo="./dataset/flatpak/.ostree/repo" 2>/dev/null || echo "Dépôt local vide ou inexistant : ./dataset/flatpak/.ostree/repo"
 
 # Confirmations d'éxecution d'une recette.
 _confirm recipe:
@@ -163,32 +153,32 @@ image-mount:
 
 # Installe l'intégralité du kit. Opération idempotente.
 online_install:
-    resources_online-download
-    resources-deploy
-    flatpak-online-install
-    brew-online-install
-    container-online-build
-    distrobox-create
-    tools-online-download
-    tools-local-copy
-    @echo "
-    @echo "Kit installé. Copiez le dépôt sur la machine cible,"
+    just resources_online-download
+    just resources-deploy
+    just flatpak-online-install
+    just brew-online-install
+    just container-online-build
+    just distrobox-create
+    just tools-online-download
+    just tools-local-copy
+    @echo ""
+    @echo "Kit installé. Copiez le dépôt sur la machine cible."
 
 # Prépare une archive squashfs de l'intégralité du kit. Opération idempotente. Aucune connection réseau nécessaire.
 local_archive:
-    install
-    flatpak-local-archive
-    _list brew-local-archive
-    container-local-archive
-    check-space
-    image_local-build
-    @ Copier et monter le dossier ./squashfs-image sur la machine cible
+    @echo "condition : online_install doit avoir été exécuté au préalable"
+    just flatpak-local-archive
+    just brew-local-archive
+    just container-local-archive
+    just _check-space
+    just image_local-build
+    @echo "Archivage terminé. Copier et monter le dossier ./squashfs-image sur la machine cible."
 
 # Déploie l'intégralité du kit depuis l'archive squashfs. Opération idempotente. Aucune connection réseau nécessaire.
-offline_deploy: 
-    image-mount
+offline_deploy:
     just confirm resources-deploy
     just confirm flatpak-offline-deploy
     just confirm brew-offline-deploy
     just confirm container-offline-import distrobox-create
     just confirm tools-local-copy
+    @echo "Déploiement terminé."

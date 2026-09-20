@@ -10,6 +10,8 @@ CONTAINER_NAME="toolbox"
 IMAGE_NAME="toolbox:latest"
 
 mkdir -p "$DATA_DIR"
+# On suprime une éventuelle archive déjà existante (car peut-être périmée)
+rm -f "${OUTPUT_FILE}"
 
 # Déclenche distrobox-init une première (et unique) fois, pendant qu'on est
 # encore en ligne : cela pose un marqueur dans le conteneur qui lui évitera
