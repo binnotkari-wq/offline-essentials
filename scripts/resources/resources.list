@@ -42,6 +42,9 @@ declare -A PUBLIC_REPOS=(
   ["scripts"]="https://github.com/binnotkari-wq/scripts.git"
   ["silverblue_bootc"]="https://github.com/binnotkari-wq/silverblue_bootc.git"
   ["offline-essentials"]="https://github.com/binnotkari-wq/offline-essentials.git"
+  ["Bazzite"]="https://github.com/ublue-os/bazzite.git"
+  ["Bluefin poject"]="https://github.com/projectbluefin/bluefin.git"
+  ["Bluefin"]="https://github.com/ublue-os/bluefin.git"
 )
 
 declare -A LLMS=(
