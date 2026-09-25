@@ -26,6 +26,8 @@ fzf
 # Recherche floue interactive en ligne de commande
 git
 # Système de contrôle de version
+git-filter-repo
+# Maintenance et nettoyage de repos git
 glow
 # Rendu de fichiers Markdown dans le terminal
 groff
