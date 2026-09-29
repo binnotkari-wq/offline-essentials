@@ -183,12 +183,20 @@ online_install:
 # Prépare une archive squashfs de l'intégralité du kit. Opération idempotente. Aucune connection réseau nécessaire.
 [group('workflows')]
 local_archive:
+    @echo "création de l'arborescence des archives"
+    mkdir -p \
+        dataset/brew \
+        dataset/distrobox \
+        dataset/flatpak \
+        dataset/resources \
+        dataset/tools \
+        squashfs-image
     @echo "condition : online_install doit avoir été exécuté au préalable"
-    just flatpak-local-archive
-    just brew-local-archive
-    just container-local-archive
+    just _confirm flatpak-local-archive
+    just _confirm brew-local-archive
+    just _confirm container-local-archive
     just _check-space
-    just image_local-build
+    just _confirm image_local-build
     @echo "Archivage terminé. Copier et monter le dossier ./squashfs-image sur la machine cible."
 
 # Déploie l'intégralité du kit depuis l'archive squashfs. Opération idempotente. Aucune connection réseau nécessaire.
