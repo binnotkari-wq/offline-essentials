@@ -3,4 +3,4 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-podman build -t toolbox:latest -f "${SCRIPT_DIR}/Containerfile" "${SCRIPT_DIR}"
+podman build -t toolbox:latest -f "${SCRIPT_DIR}/Containerfile_fedora" "${SCRIPT_DIR}"
