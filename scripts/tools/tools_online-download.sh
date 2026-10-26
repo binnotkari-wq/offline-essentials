@@ -10,7 +10,7 @@ mkdir -p "$DEST"
 declare -A TOOLS=(
   [glow]="https://github.com/charmbracelet/glow/releases/download/v2.1.2/glow_2.1.2_Linux_x86_64.tar.gz"
   [mdcat]="https://github.com/swsnr/mdcat/releases/download/mdcat-2.1.1/mdcat-2.1.1-x86_64-unknown-linux-musl.tar.gz"
-  [just]="https://github.com/casey/just/releases/download/1.36.0/just-1.36.0-x86_64-unknown-linux-musl.tar.gz"
+  [just]="https://github.com/casey/just/releases/download/1.59.0/just-1.59.0-x86_64-unknown-linux-musl.tar.gz"
   [llama.cpp]="https://github.com/ggml-org/llama.cpp/releases/download/b10969/llama-b10969-bin-ubuntu-vulkan-x64.tar.gz"
 )
 
