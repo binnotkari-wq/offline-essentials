@@ -4,6 +4,26 @@ Kit minimal pour utiliser Linux (n'importe quelle distribution) sur une machine 
 
 Le dépôt ne contient **aucune référence à une distribution en particulier** : tout ce qui est produit ici doit pouvoir être copié tel quel sur n'importe quelle machine Linux, avec ou sans accès réseau.
 
+## Exécution
+
+``` bash
+wget -qO /tmp/offline-essentials.zip https://github.com/binnotkari-wq/offline-essentials/archive/refs/heads/main.zip && \
+unzip -q /tmp/offline-essentials.zip -d /tmp/ && \
+mv /tmp/offline-essentials-main /tmp/offline-essentials && \
+wget -qO- https://github.com/casey/just/releases/download/1.59.0/just-1.59.0-x86_64-unknown-linux-musl.tar.gz | tar -xz -C /tmp/offline-essentials just && \
+cd /tmp/offline-essentials && ./just
+```
+
+Actions de ces commandes : 
+
+- Télécharge l’archive zip de ce repo dans /tmp/
+- La décompresse dans /tmp/offline-essentials-main/
+- Renomme en /tmp/offline-essentials/
+- Télécharge et décompresse l’archive de just, en extrayant uniquement l’exécutable just directement dans /tmp/offline-essentials/
+- Se place dans le dossier et lance ./just
+
+Le just extrait dans le même dossier que le justfile suffit, pas besoin de l’installer dans le PATH.
+
 ## Objectif
 
 Pouvoir manipuler, préparer, personnaliser, expérimenter et maintenir un système Linux en étant **hors-ligne pendant un mois entier** : documentation de référence, applications courantes, un modèle LLM pour interroger la doc localement, et les outils nécessaires pour tout consulter sans navigateur ni connexion.
