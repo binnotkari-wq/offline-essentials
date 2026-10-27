@@ -5,17 +5,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FORMULAS_FILE="$SCRIPT_DIR/brew.list"
 
 # 1. Installer brew (si pas déjà présent)
-if ! command -v brew >/dev/null 2>&1 && [[ ! -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-else
-    echo "Brew déjà installé, étape sautée."
-fi
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
 
 # Ajout du path dans .bashrc, une seule fois
 if ! grep -q 'linuxbrew/.linuxbrew/bin/brew shellenv' ~/.bashrc 2>/dev/null; then
     cp -f "$HOME/.bashrc" "$HOME/.bashrc.backup"
     echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
     export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 fi
 

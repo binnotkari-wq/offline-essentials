@@ -18,7 +18,7 @@ duf
 # Visualisation de l'usage disque, alternative moderne à df
 fd
 # Recherche de fichiers rapide, alternative à find
-ffmpeg
+ffmpeg-full
 # Conversion et traitement audio/vidéo
 font-jetbrains-mono-nerd-font
 # Police monospace avec glyphes Nerd Font (icônes terminal)
@@ -56,6 +56,8 @@ pandoc
 # Conversion universelle entre formats de documents
 pciutils
 # Utilitaires d'inspection des périphériques PCI (lspci...)
+podman
+# Nécessaire à distrobox
 shellcheck
 # Analyseur statique de scripts shell
 shfmt
@@ -68,8 +70,8 @@ squashfs
 # Outils de création/lecture de systèmes de fichiers compressés SquashFS
 stress-ng
 # Tests de charge et de stabilité système
-tldr
-# Pages d'aide simplifiées, alternative concise à man
+# tldr
+# Pages d'aide simplifiées, alternative concise à man - ne semble plus maintenu
 tmux
 # Multiplexeur de terminal
 tree

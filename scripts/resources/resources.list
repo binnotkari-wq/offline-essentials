@@ -17,6 +17,7 @@ declare -A REPOS=(
   ["nixpkgs-manual"]="https://github.com/NixOS/nixpkgs.git"
   ["nixos-manual"]="https://github.com/NixOS/nixpkgs.git"
   ["ostree-docs"]="https://github.com/ostreedev/ostree.git"
+  ["bash-oneliner"]="https://github.com/onceupon/Bash-Oneliner.git"
 )
 
 declare -A EBOOKS=(
